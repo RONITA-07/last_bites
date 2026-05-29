@@ -43,7 +43,7 @@ export default function ImpactWidget({ userId, restaurantId, refreshTrigger }) {
         color: 'var(--text-secondary)',
         fontFamily: "'Outfit', sans-serif"
       }}>
-        <div className="animate-float">🌍 Analyzing environmental impact...</div>
+        <div className="animate-float">Analyzing environmental impact...</div>
       </div>
     );
   }
@@ -74,9 +74,9 @@ export default function ImpactWidget({ userId, restaurantId, refreshTrigger }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '1.8rem'
+          color: 'var(--primary)'
         }}>
-          🍲
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v8c0 1.1.9 2 2 2h3Zm0 0v4"/></svg>
         </div>
         <div>
           <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)', lineHeight: 1.1 }}>
@@ -104,9 +104,9 @@ export default function ImpactWidget({ userId, restaurantId, refreshTrigger }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '1.8rem'
+          color: '#0288D1'
         }}>
-          🌱
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.8a7 7 0 0 1-7 8.2z"/><path d="M9 22v-4h4"/></svg>
         </div>
         <div>
           <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0288D1', lineHeight: 1.1 }}>
@@ -136,9 +136,9 @@ export default function ImpactWidget({ userId, restaurantId, refreshTrigger }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.8rem'
+              color: '#E65100'
             }}>
-              💰
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8V6"/><path d="M12 18v-2"/><path d="M16 12H12.5a1.5 1.5 0 0 1 0-3H15"/><path d="M8 12h3.5a1.5 1.5 0 0 0 0 3H14"/></svg>
             </div>
             <div>
               <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#E65100', lineHeight: 1.1 }}>
@@ -159,9 +159,9 @@ export default function ImpactWidget({ userId, restaurantId, refreshTrigger }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.8rem'
+              color: '#2E7D32'
             }}>
-              🌳
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L3 9h4v10h10V9h4L12 2z"/></svg>
             </div>
             <div>
               <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#2E7D32', lineHeight: 1.1 }}>

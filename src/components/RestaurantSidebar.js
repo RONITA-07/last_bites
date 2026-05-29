@@ -43,10 +43,10 @@ export default function RestaurantSidebar({ user }) {
               href={href}
               className={`sidebar-link ${active ? 'sidebar-link--active' : ''}`}
             >
-              <span className="sidebar-link-icon">
-                {label === 'Dashboard'  && '⊞'}
-                {label === 'Analytics'  && '📈'}
-                {label === 'Operations' && '🧾'}
+              <span className="sidebar-link-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                {label === 'Dashboard'  && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>}
+                {label === 'Analytics'  && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
+                {label === 'Operations' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>}
               </span>
               <span>{label}</span>
               {active && <span className="sidebar-link-pip" />}
@@ -70,8 +70,9 @@ export default function RestaurantSidebar({ user }) {
               <div className="sidebar-user-role">Owner</div>
             </div>
           </div>
-          <button className="sidebar-logout" onClick={handleSignOut}>
-            <span>↩</span> Sign Out
+          <button className="sidebar-logout" onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
           </button>
         </div>
       )}

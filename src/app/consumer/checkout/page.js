@@ -8,12 +8,43 @@ import { useCart } from '@/components/CartContext';
 function PaymentOverlay({ stage }) {
   // stage: 'processing' | 'done'
   const steps = [
-    { id: 'processing', icon: '🔐', label: 'Encrypting your payment…'   },
-    { id: 'verifying',  icon: '🏦', label: 'Verifying with your bank…'  },
-    { id: 'confirming', icon: '✅', label: 'Confirming order…'          },
+    {
+      id: 'processing',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)' }}>
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      ),
+      label: 'Encrypting your payment…'
+    },
+    {
+      id: 'verifying',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)' }}>
+          <line x1="3" y1="21" x2="21" y2="21" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+          <path d="M5 21V10" />
+          <path d="M19 21V10" />
+          <path d="M12 21V10" />
+          <path d="M4 10l8-6 8 6" />
+        </svg>
+      ),
+      label: 'Verifying with your bank…'
+    },
+    {
+      id: 'confirming',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#16a34a' }}>
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      ),
+      label: 'Confirming order…'
+    },
   ];
 
-   return (
+  return (
     <div style={{
       position: 'fixed', inset: 0,
       background: 'rgba(15, 30, 20, 0.82)',
@@ -53,7 +84,7 @@ function PaymentOverlay({ stage }) {
                   background: '#F4F7F5',
                   animation: `slideUpFade 0.4s ${i * 0.3}s both`,
                 }}>
-                  <span style={{ fontSize: '1.2rem' }}>{s.icon}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>{s.icon}</span>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#5F6F65' }}>{s.label}</span>
                   <div style={{ marginLeft: 'auto', width: '16px', height: '16px', border: '2px solid #E6F4EA', borderTop: '2px solid #2f6b4f', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
                 </div>
@@ -67,14 +98,16 @@ function PaymentOverlay({ stage }) {
               width: '80px', height: '80px', margin: '0 auto 20px',
               background: 'linear-gradient(135deg, #2f6b4f, #4CAF7A)',
               borderRadius: '50%', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: '2.4rem', color: '#fff',
+              justifyContent: 'center', color: '#fff',
               boxShadow: '0 8px 30px rgba(47,107,79,0.4)',
               animation: 'confirmPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both',
             }}>
-              ✓
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
             </div>
             <h2 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#1C1C1C', marginBottom: '8px' }}>
-              Payment Successful! 🎉
+              Payment Successful
             </h2>
             <p style={{ color: '#16a34a', fontWeight: 600, fontSize: '0.9rem', marginBottom: '6px' }}>
               Your order has been confirmed
@@ -103,21 +136,21 @@ export default function CheckoutPage() {
   const [user, setUser] = useState(null);
 
   // Form
-  const [name,   setName]   = useState('');
-  const [email,  setEmail]  = useState('');
-  const [phone,  setPhone]  = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [method, setMethod] = useState('upi');
-  const [upiId,  setUpiId]  = useState('');
+  const [upiId, setUpiId] = useState('');
   const [cardNo, setCardNo] = useState('');
   const [expiry, setExpiry] = useState('');
-  const [cvv,    setCvv]    = useState('');
+  const [cvv, setCvv] = useState('');
   const [walletBalance, setWalletBalance] = useState(0);
   const [coinsBalance, setCoinsBalance] = useState(0);
   const [useCoins, setUseCoins] = useState(false);
 
   // Payment stage: null | 'processing' | 'done'
   const [payStage, setPayStage] = useState(null);
-  const [error,    setError]    = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const stored = localStorage.getItem('decarb_user');
@@ -157,9 +190,9 @@ export default function CheckoutPage() {
 
   if (!user) return null;
 
-  const co2Total      = items.reduce((s, i) => s + Number(i.listing.co2_saved || 0) * i.qty, 0);
-  const savingsTotal  = items.reduce((s, i) => s + (Number(i.listing.original_price || 0) - Number(i.listing.price || 0)) * i.qty, 0);
-  const mealsCount    = items.reduce((s, i) => s + i.qty, 0);
+  const co2Total = items.reduce((s, i) => s + Number(i.listing.co2_saved || 0) * i.qty, 0);
+  const savingsTotal = items.reduce((s, i) => s + (Number(i.listing.original_price || 0) - Number(i.listing.price || 0)) * i.qty, 0);
+  const mealsCount = items.reduce((s, i) => s + i.qty, 0);
 
   const coinsDiscount = useCoins ? Math.min(coinsBalance / 100, totalPrice) : 0;
   const finalPrice = Math.max(0, Number((totalPrice - coinsDiscount).toFixed(2)));
@@ -167,7 +200,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setError('');
-    if (method === 'upi' && !upiId.trim())                               { setError('Please enter your UPI ID.'); return; }
+    if (method === 'upi' && !upiId.trim()) { setError('Please enter your UPI ID.'); return; }
     if (method === 'card' && (!cardNo.trim() || !expiry.trim() || !cvv.trim())) { setError('Please fill all card details.'); return; }
     if (method === 'wallet' && walletBalance < finalPrice) {
       setError(`Insufficient wallet balance. Total is ₹${finalPrice.toFixed(2)}, but you only have ₹${walletBalance.toFixed(2)}.`);
@@ -270,8 +303,8 @@ export default function CheckoutPage() {
         } else {
           // Fallback: Simulated Test Payment
           console.log('[Razorpay] Simulated payment mode active for checkout.');
-          setError('💳 Launching Simulated Test Payment... (No real keys configured)');
-          
+          setError('Launching Simulated Test Payment... (No real keys configured)');
+
           await new Promise((resolve, reject) => {
             setTimeout(async () => {
               try {
@@ -322,9 +355,9 @@ export default function CheckoutPage() {
             return fetch('http://localhost:5000/api/order/place', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                user_id: user.id, 
-                food_id: listing._id, 
+              body: JSON.stringify({
+                user_id: user.id,
+                food_id: listing._id,
                 quantity: qty,
                 discount: Number(itemDiscount.toFixed(2))
               }),
@@ -363,9 +396,9 @@ export default function CheckoutPage() {
           price: Number(i.listing.price) * i.qty,
           restaurantName: typeof i.listing.restaurant_id === 'object' && i.listing.restaurant_id
             ? i.listing.restaurant_id.name : 'Partner Store',
-             preparation_date: i.listing.preparation_date,
-          preparation_time: i.listing.preparation_time,
           pickup_time: i.listing.pickup_time,
+          preparation_date: i.listing.preparation_date,
+          preparation_time: i.listing.preparation_time,
         })),
         totalPrice: finalPrice,
         co2Total,
@@ -398,8 +431,9 @@ export default function CheckoutPage() {
           <Link href="/consumer/cart" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-secondary)', textDecoration: 'none', marginBottom: '14px', fontWeight: 500 }}>
             ← Back to Cart
           </Link>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>
-            💳 Payment
+          <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
+            Payment
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
             Secure checkout — your details are never stored.
@@ -414,7 +448,10 @@ export default function CheckoutPage() {
 
               {/* Contact */}
               <div className="checkout-section">
-                <h2 className="checkout-section-title">📋 Contact Details</h2>
+                <h2 className="checkout-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                  Contact Details
+                </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div>
                     <label className="form-label">Full Name</label>
@@ -435,17 +472,26 @@ export default function CheckoutPage() {
 
               {/* Payment Method */}
               <div className="checkout-section">
-                <h2 className="checkout-section-title">💳 Payment Method</h2>
+                <h2 className="checkout-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>
+                  Payment Method
+                </h2>
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
                   {[
-                    { id: 'upi',  label: '🏦 UPI'            },
-                    { id: 'card', label: '💳 Card'            },
-                    { id: 'wallet', label: '🍀 LastBite Wallet' },
-                    { id: 'razorpay', label: '💳 Razorpay Gateway' },
-                    { id: 'cod',  label: '💵 Cash on Pickup'  },
+                    { id: 'upi', label: 'UPI' },
+                    { id: 'card', label: 'Card' },
+                    { id: 'wallet', label: 'LastBite Wallet' },
+                    { id: 'razorpay', label: 'Razorpay Gateway' },
+                    { id: 'cod', label: 'Cash on Pickup' },
                   ].map(m => (
                     <button key={m.id} type="button" onClick={() => setMethod(m.id)}
-                      className={`payment-tab ${method === m.id ? 'payment-tab--active' : ''}`}>
+                      className={`payment-tab ${method === m.id ? 'payment-tab--active' : ''}`}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      {m.id === 'upi' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="21" x2="21" y2="21" /><line x1="3" y1="10" x2="21" y2="10" /><path d="M5 21V10" /><path d="M19 21V10" /><path d="M12 21V10" /><path d="M4 10l8-6 8 6" /></svg>}
+                      {m.id === 'card' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>}
+                      {m.id === 'wallet' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /><path d="M19 7h-6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6Z" /></svg>}
+                      {m.id === 'razorpay' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>}
+                      {m.id === 'cod' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
                       {m.label}
                     </button>
                   ))}
@@ -487,12 +533,14 @@ export default function CheckoutPage() {
                       <strong style={{ fontSize: '1.2rem', color: 'var(--primary)' }}>₹{walletBalance.toFixed(2)}</strong>
                     </div>
                     {walletBalance >= finalPrice ? (
-                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                        ✓ Sufficient balance. The total amount of ₹{finalPrice.toFixed(2)} will be deducted from your wallet.
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2f6b4f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Sufficient balance. The total amount of ₹{finalPrice.toFixed(2)} will be deducted from your wallet.
                       </p>
                     ) : (
-                      <p style={{ fontSize: '0.78rem', color: '#C5221F', fontWeight: 600 }}>
-                        ⚠ Insufficient balance. You need ₹{(finalPrice - walletBalance).toFixed(2)} more. Please top up your wallet under the Customer details menu.
+                      <p style={{ fontSize: '0.78rem', color: '#C5221F', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                        Insufficient balance. You need ₹{(finalPrice - walletBalance).toFixed(2)} more. Please top up your wallet under the Customer details menu.
                       </p>
                     )}
                   </div>
@@ -500,13 +548,13 @@ export default function CheckoutPage() {
 
                 {method === 'razorpay' && (
                   <div className="payment-fields" style={{ background: '#E6F4EA', borderRadius: '12px', padding: '16px', fontSize: '0.88rem', color: '#2f6b4f', fontWeight: 500 }}>
-                    💳 Pay securely using cards, UPI, netbanking, or wallets via the **Razorpay test payment gateway**.
+                    Pay securely using cards, UPI, netbanking, or wallets via the **Razorpay test payment gateway**.
                   </div>
                 )}
 
                 {method === 'cod' && (
                   <div className="payment-fields" style={{ background: '#E6F4EA', borderRadius: '12px', padding: '16px', fontSize: '0.88rem', color: '#2f6b4f', fontWeight: 500 }}>
-                    💚 Pay with cash when you pick up your order. No advance payment needed.
+                    Pay with cash when you pick up your order. No advance payment needed.
                   </div>
                 )}
 
@@ -536,8 +584,9 @@ export default function CheckoutPage() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                      color: 'var(--primary)'
                     }}>
-                      🪙
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v12" /><path d="M17 12H7" /></svg>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
@@ -552,9 +601,9 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    checked={useCoins} 
+                  <input
+                    type="checkbox"
+                    checked={useCoins}
                     disabled={coinsBalance === 0}
                     onChange={(e) => {
                       e.stopPropagation();
@@ -573,8 +622,9 @@ export default function CheckoutPage() {
               </div>
 
               {error && (
-                <div style={{ background: '#FCE8E6', color: '#C5221F', padding: '12px 16px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  ⚠ {error}
+                <div style={{ background: '#FCE8E6', color: '#C5221F', padding: '12px 16px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                  {error}
                 </div>
               )}
             </div>
@@ -582,17 +632,8 @@ export default function CheckoutPage() {
             {/* ── Right: Summary ── */}
             <div className="cart-summary">
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '16px' }}>Order Summary</h2>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                {items.map(({ listing, qty }) => (
-                  <div key={listing._id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                    <span style={{ color: '#5F6F65', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {listing.title} ×{qty}
-                    </span>
-                    <span style={{ fontWeight: 700, color: '#1C1C1C' }}>
-                      {Number(listing.price) === 0 ? 'Free' : `₹${(Number(listing.price) * qty).toFixed(2)}`}
-                    </span>
-                  </div>
-                ))}
                 {items.map(({ listing, qty }) => {
                   const formatPrepDate = (dateStr) => {
                     if (!dateStr) return '';
@@ -602,9 +643,10 @@ export default function CheckoutPage() {
                         const date = new Date(parts[0], parts[1] - 1, parts[2]);
                         return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
                       }
-                    } catch (_) {}
+                    } catch (_) { }
                     return dateStr;
                   };
+
                   return (
                     <div key={listing._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
                       <div>
@@ -612,8 +654,9 @@ export default function CheckoutPage() {
                           {listing.title} ×{qty}
                         </span>
                         {(listing.preparation_date || listing.preparation_time) && (
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
-                            🍳 Prepared: <strong>{formatPrepDate(listing.preparation_date)}{listing.preparation_time ? ` @ ${listing.preparation_time}` : ''}</strong>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                            Prepared: <strong>{formatPrepDate(listing.preparation_date)}{listing.preparation_time ? ` @ ${listing.preparation_time}` : ''}</strong>
                           </span>
                         )}
                       </div>
@@ -624,28 +667,47 @@ export default function CheckoutPage() {
                   );
                 })}
               </div>
+
               <div style={{ borderTop: '2px solid #EAEEF2', paddingTop: '14px', marginBottom: '16px' }}>
                 <div className="summary-row" style={{ color: '#16a34a' }}>
                   <span>You Save</span><span>−₹{savingsTotal.toFixed(2)}</span>
                 </div>
                 {useCoins && coinsBalance > 0 && (
-                  <div className="summary-row" style={{ color: '#d97706', fontWeight: 600, fontSize: '0.82rem', marginBottom: '6px' }}>
-                    <span>🪙 Coins Discount</span><span>−₹{coinsDiscount.toFixed(2)}</span>
+                  <div className="summary-row" style={{ color: '#d97706', fontWeight: 600, fontSize: '0.82rem', marginBottom: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v12" /><path d="M17 12H7" /></svg>
+                      Coins Discount
+                    </span>
+                    <span>−₹{coinsDiscount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="summary-row summary-row--total" style={{ marginTop: '8px' }}>
                   <span>Total</span><span>₹{finalPrice.toFixed(2)}</span>
                 </div>
-                <div style={{ marginTop: '10px', background: '#E0F2F1', borderRadius: '10px', padding: '10px 12px', fontSize: '0.78rem', color: '#00695C', fontWeight: 600 }}>
-                  🌱 This order saves {co2Total.toFixed(1)} kg CO₂ — equivalent to planting {(co2Total / 20).toFixed(1)} trees!
+                <div style={{ marginTop: '10px', background: '#E0F2F1', borderRadius: '10px', padding: '10px 12px', fontSize: '0.78rem', color: '#00695C', fontWeight: 600, display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.8a7 7 0 0 1-7 8.2z" /><path d="M9 22v-4h4" /></svg>
+                  <span>This order saves {co2Total.toFixed(1)} kg CO₂ — equivalent to planting {(co2Total / 20).toFixed(1)} trees!</span>
                 </div>
               </div>
+
               <button type="submit" disabled={!!payStage} className="checkout-btn"
-                style={{ border: 'none', cursor: payStage ? 'not-allowed' : 'pointer', opacity: payStage ? 0.6 : 1 }}>
-                {payStage ? '⏳ Processing…' : `✔ Confirm & Pay ₹${finalPrice.toFixed(2)}`}
+                style={{ border: 'none', cursor: payStage ? 'not-allowed' : 'pointer', opacity: payStage ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                {payStage ? (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                    Processing…
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                    Confirm & Pay ₹{finalPrice.toFixed(2)}
+                  </>
+                )}
               </button>
+
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '14px', fontSize: '0.72rem', color: '#9AA0A6', fontWeight: 500 }}>
-                🔒 Secure & encrypted checkout
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                Secure & encrypted checkout
               </div>
             </div>
           </div>

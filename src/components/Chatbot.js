@@ -6,7 +6,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: "Namaste! I am LastBitesBot. Ask me about available meals, carbon savings, or tips to conserve resources! 🍱🌱"
+      text: "Welcome to LastBitesBot. Ask me about available meals, carbon savings, or tips to conserve resources!"
     }
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -84,7 +84,7 @@ export default function Chatbot() {
     setMessages([
       {
         sender: 'bot',
-        text: "Chat cleared. How else can I assist your food saving efforts today? 🌍"
+        text: "Chat cleared. How else can I assist your food saving efforts today?"
       }
     ]);
   };
@@ -401,10 +401,16 @@ export default function Chatbot() {
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.2s',
-            outline: 'none'
+            outline: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
           }}
         >
-          🍱 Food available?
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          </svg>
+          Food available?
         </button>
         <button 
           onClick={() => handleSend('How much carbon did I save?')}
@@ -418,10 +424,17 @@ export default function Chatbot() {
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.2s',
-            outline: 'none'
+            outline: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
           }}
         >
-          🌱 My CO₂ savings?
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z" />
+            <path d="M9 22v-4" />
+          </svg>
+          My CO₂ savings?
         </button>
         <button 
           onClick={() => handleSend('How do I earn coins?')}
@@ -435,10 +448,18 @@ export default function Chatbot() {
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.2s',
-            outline: 'none'
+            outline: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
           }}
         >
-          🪙 How to earn coins?
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="8" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="9" y1="12" x2="15" y2="12" />
+          </svg>
+          How to earn coins?
         </button>
       </div>
 

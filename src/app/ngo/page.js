@@ -113,7 +113,7 @@ export default function NGOPage() {
       }
 
       setToast({
-        text: `🎁 Donation claimed! Coordinate with the restaurant for pickup.`,
+        text: `Donation claimed! Coordinate with the restaurant for pickup.`,
         type: 'success'
       });
 
@@ -204,10 +204,13 @@ export default function NGOPage() {
         </div>
       )}
 
-      {/* NGO Dynamic Environmental Impact Widgets */}
       <div style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)' }}>
-          🌱 NGO Environmental Impact Metrics
+        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6b4f" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z" />
+            <path d="M9 22v-4" />
+          </svg>
+          NGO Environmental Impact Metrics
         </h2>
         <ImpactWidget userId={user.id} refreshTrigger={refreshStats} />
       </div>
@@ -221,10 +224,16 @@ export default function NGOPage() {
         marginBottom: '40px'
       }}>
         
-        {/* Left Side: Available Donations Finder */}
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '20px', color: 'var(--primary)' }}>
-            🎁 Available Donations Nearby
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '20px', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12" />
+              <rect x="2" y="7" width="20" height="5" />
+              <line x1="12" y1="22" x2="12" y2="7" />
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+            </svg>
+            Available Donations Nearby
           </h2>
 
           <div style={{ marginBottom: '24px' }}>
@@ -246,7 +255,15 @@ export default function NGOPage() {
               borderRadius: '24px',
               border: '1px dashed var(--border)'
             }}>
-              <span style={{ fontSize: '2.5rem' }}>🎁</span>
+              <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12" />
+                  <rect x="2" y="7" width="20" height="5" />
+                  <line x1="12" y1="22" x2="12" y2="7" />
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                </svg>
+              </div>
               <h3 style={{ fontSize: '1.2rem', marginTop: '12px', color: 'var(--primary)' }}>No active free donations found</h3>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                 All nearby meals are currently claimed. Check back shortly!
@@ -269,8 +286,9 @@ export default function NGOPage() {
 
         {/* Right Side: Claimed Logistics Tracking */}
         <FloatingCard style={{ padding: '30px', backgroundColor: 'var(--surface)' }}>
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '16px', borderBottom: '1px solid rgba(95,111,101,0.1)', paddingBottom: '10px' }}>
-            🚛 Claimed Pickups & Deliveries
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '16px', borderBottom: '1px solid rgba(95,111,101,0.1)', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
+            Claimed Pickups & Deliveries
           </h3>
 
           {loadingClaims ? (

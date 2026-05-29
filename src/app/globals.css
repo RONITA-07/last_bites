@@ -213,9 +213,9 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-
 .animate-fade-in {
   animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0; /* start hidden so animation handles transition */
 }
 
 .animate-float {
@@ -227,7 +227,6 @@ h1, h2, h3, h4, h5, h6 {
 .delay-3 { animation-delay: 0.4s; }
 .delay-4 { animation-delay: 0.55s; }
 .delay-5 { animation-delay: 0.7s; }
-
 
 /* Dynamic Page Loading */
 .page-container {
@@ -1178,7 +1177,6 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.03em;
-  color: #1a1a1a;
   background: linear-gradient(135deg, #112F1F 0%, #2f6b4f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1224,21 +1222,18 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 2px 16px rgba(47,107,79,0.07);
   border: 1px solid #eef2ee;
   cursor: pointer;
-   transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
- 
+
 .home-role-card:hover,
 .home-role-card:active {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(47,107,79,0.13);
   transform: translateY(-5px);
   box-shadow: 0 12px 32px rgba(47,107,79,0.15);
 }
+
 .home-role-card:hover .home-role-card__icon {
   transform: scale(1.08) rotate(2deg);
 }
-
 
 .home-role-card__icon {
   width: 52px;
@@ -1514,66 +1509,79 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Dark mode overrides ── */
 [data-theme="dark"] .home-page   { background: #0B130F; }
 [data-theme="dark"] .home-hero   { background: #0B130F; }
-[data-theme="dark"] .home-hero__title { color: #ECEFF1; }
+
 [data-theme="dark"] .home-hero__title {
   background: linear-gradient(135deg, #FFFFFF 0%, #A8E6CF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
 [data-theme="dark"] .home-hero__sub {
   color: #CFD8DC; /* high contrast cool gray */
 }
+
 [data-theme="dark"] .home-hero__motto {
   color: #74C69D; /* high contrast mint green */
 }
+
 [data-theme="dark"] .home-hero__badge {
   background: #1B4332;
   color: #85E3B2;
   border: 1px solid rgba(82, 183, 136, 0.2);
 }
+
 [data-theme="dark"] .home-role-card {
-  background: var(--surface);
-  border-color: var(--border);
   background: var(--surface); /* #111F17 */
   border-color: var(--border); /* #1E352B */
 }
-[data-theme="dark"] .home-role-card__title { color: #ECEFF1; }
+
 [data-theme="dark"] .home-role-card:hover {
   border-color: rgba(82, 183, 136, 0.4);
   box-shadow: 0 12px 32px rgba(82, 183, 136, 0.15);
 }
+
 [data-theme="dark"] .home-role-card__title {
   color: #ECEFF1;
 }
+
 [data-theme="dark"] .home-role-card__desc {
   color: #B2C3B7; /* bright text color */
 }
+
 [data-theme="dark"] .home-role-card__icon {
   background: #1B4332;
 }
+
 [data-theme="dark"] .home-role-card__icon svg {
   stroke: #74C69D !important;
 }
+
 [data-theme="dark"] .home-bottom-nav {
   background: #111F17;
   border-top-color: var(--border);
 }
+
 [data-theme="dark"] .home-footer {
   border-top-color: var(--border);
 }
+
 [data-theme="dark"] .home-footer__brand {
   color: #ECEFF1;
 }
+
 [data-theme="dark"] .home-footer__brand svg {
   stroke: #74C69D !important;
 }
+
 [data-theme="dark"] .home-footer__links a {
   color: #CFD8DC;
 }
+
 [data-theme="dark"] .home-footer__links a:hover {
   color: #74C69D;
 }
+
 /* Ambient Pulsing Glow behind hero in dark mode */
 .home-hero__glow {
   display: none;

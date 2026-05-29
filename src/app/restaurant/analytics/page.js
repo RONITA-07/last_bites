@@ -121,7 +121,12 @@ export default function RestaurantAnalyticsPage() {
           {/* KPI ROW */}
           <div className="kpi-row kpi-row--wide" style={{ marginBottom: '8px' }}>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#E3F2FD', color: '#1565C0' }}>💰</div>
+              <div className="kpi-icon" style={{ background: '#E3F2FD', color: '#1565C0' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">Total Revenue</p>
                 <h3 className="kpi-value" style={{ color: '#1565C0' }}>₹{totalRev.toFixed(0)}</h3>
@@ -129,7 +134,13 @@ export default function RestaurantAnalyticsPage() {
               </div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#F3E5F5', color: '#7B1FA2' }}>📦</div>
+              <div className="kpi-icon" style={{ background: '#F3E5F5', color: '#7B1FA2' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">Rescued Items</p>
                 <h3 className="kpi-value" style={{ color: '#7B1FA2' }}>{totalItems}</h3>
@@ -137,7 +148,12 @@ export default function RestaurantAnalyticsPage() {
               </div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#FEF3D6', color: '#B06000' }}>⏳</div>
+              <div className="kpi-icon" style={{ background: '#FEF3D6', color: '#B06000' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">Pending Orders</p>
                 <h3 className="kpi-value" style={{ color: '#B06000' }}>{pending}</h3>
@@ -145,7 +161,12 @@ export default function RestaurantAnalyticsPage() {
               </div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>✅</div>
+              <div className="kpi-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">Completed</p>
                 <h3 className="kpi-value" style={{ color: '#16a34a' }}>{fulfilled}</h3>
@@ -227,7 +248,12 @@ export default function RestaurantAnalyticsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '8px' }}>
             {/* Eco impact */}
             <div className="dash-card" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ fontSize: '2.5rem', background: '#E0F2F1', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🌱</div>
+              <div style={{ background: '#E0F2F1', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00695C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z" />
+                  <path d="M9 22v-4" />
+                </svg>
+              </div>
               <div>
                 <p className="kpi-label">Eco Impact</p>
                 <h3 className="kpi-value" style={{ color: '#00695C' }}>{co2.toFixed(1)} kg CO₂</h3>
@@ -237,7 +263,15 @@ export default function RestaurantAnalyticsPage() {
 
             {/* Top performer */}
             <div className="dash-card" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ fontSize: '2.5rem', background: '#FFF3E0', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🏆</div>
+              <div style={{ background: '#FFF3E0', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E65100" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                  <path d="M4 22h16" />
+                  <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
+                  <path d="M12 2a5 5 0 0 0-5 5v5a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z" />
+                </svg>
+              </div>
               <div>
                 <p className="kpi-label">Best Performer</p>
                 {topItem ? (

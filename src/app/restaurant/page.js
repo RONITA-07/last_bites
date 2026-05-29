@@ -35,7 +35,40 @@ function BottomNav({ tab, setTab, router }) {
 /* ──────────────────────────────────────────────
    FOOD CARD
 ────────────────────────────────────────────── */
-const CAT_EMOJI = { meals:'🍱', bakery:'🥐', groceries:'🥬', beverages:'🧃', other:'🍽️' };
+const CAT_ICONS = {
+  meals: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="3" y1="9" x2="21" y2="9"/>
+      <line x1="9" y1="21" x2="9" y2="9"/>
+    </svg>
+  ),
+  bakery: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v20"/>
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </svg>
+  ),
+  groceries: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.8a7 7 0 0 1-7 8.2z"/>
+      <path d="M9 22v-4h4"/>
+    </svg>
+  ),
+  beverages: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2v20M18 2v20M6 12h12"/>
+    </svg>
+  ),
+  other: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="16"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+  )
+};
+
 const STATUS_CFG = {
   available: { label:'Live',    cls:'rd-badge--green' },
   sold:      { label:'Sold Out',cls:'rd-badge--blue'  },
@@ -52,7 +85,7 @@ function FoodCard({ listing }) {
       <div className="rd-food-card__img">
         {listing.image
           ? <img src={listing.image} alt={listing.title} /> // eslint-disable-line
-          : <div className="rd-food-card__placeholder">{CAT_EMOJI[listing.category]||'🍽️'}</div>
+          : <div className="rd-food-card__placeholder" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>{CAT_ICONS[listing.category] || CAT_ICONS.other}</div>
         }
         {disc > 0 && <div className="rd-food-card__disc">-{disc}%</div>}
         <span className={`rd-badge ${sc.cls}`}>{sc.label}</span>
@@ -103,17 +136,18 @@ export default function RestaurantPage() {
   const [tab,      setTab]      = useState('home');
   const [toast,    setToast]    = useState(null);
   const [filter,   setFilter]   = useState('all');
-  
+
   const getTodayDateString = () => {
     const d = new Date();
     const tzOffset = d.getTimezoneOffset() * 60000;
     return (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
   };
+
   const getCurrentTimeString = () => {
     const d = new Date();
     return d.toTimeString().split(' ')[0].substring(0, 5);
   };
-  
+
   /* form */
   const [img,      setImg]      = useState('');
   const [over,     setOver]     = useState(false);
@@ -123,11 +157,12 @@ export default function RestaurantPage() {
   const [orig,     setOrig]     = useState('');
   const [qty,      setQty]      = useState('1');
   const [cat,      setCat]      = useState('meals');
-  const [pickup,   setPickup]   = useState('');
+  const [prepDate, setPrepDate] = useState(getTodayDateString());
+  const [prepTime, setPrepTime] = useState(getCurrentTimeString());
   const [saving,   setSaving]   = useState(false);
   const [step,     setStep]     = useState(1); // 1 or 2
 
-   /* auth */
+  /* auth */
   useEffect(()=>{
     const raw = localStorage.getItem('decarb_user');
     if(!raw){ router.push('/?auth=login'); return; }
@@ -181,7 +216,7 @@ export default function RestaurantPage() {
       });
       const data=await res.json();
       if(!res.ok) throw new Error(data.error||'Failed');
-      setToast({msg:'🎉 Listing is now live!',type:'success'});
+      setToast({msg:'Listing is now live!',type:'success'});
       setTitle(''); setDesc(''); setPrice(''); setOrig('');
       setQty('1'); setCat('meals'); setImg(''); 
       setPrepDate(getTodayDateString());
@@ -208,7 +243,7 @@ export default function RestaurantPage() {
   const filtered = filter==='all' ? listings : listings.filter(l=>l.status===filter);
   const hour     = new Date().getHours();
   const greeting = hour<12?'Good Morning':hour<17?'Good Afternoon':'Good Evening';
-  const greet    = hour<12?'Good Morning ☀️':hour<17?'Good Afternoon 🌤':'Good Evening 🌙';
+  const greet    = greeting;
 
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -229,7 +264,9 @@ export default function RestaurantPage() {
           {/* Stats row */}
           <div className="kpi-row kpi-row--wide" style={{ marginBottom: '8px' }}>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>📦</div>
+              <div className="kpi-icon" style={{ background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">Live Listings</p>
                 <h3 className="kpi-value" style={{ color: '#16a34a' }}>{live}</h3>
@@ -237,7 +274,9 @@ export default function RestaurantPage() {
               </div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#FEF3D6', color: '#B06000' }}>🛍️</div>
+              <div className="kpi-icon" style={{ background: '#FEF3D6', color: '#B06000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">Meals Sold</p>
                 <h3 className="kpi-value" style={{ color: '#B06000' }}>{sold}</h3>
@@ -245,7 +284,9 @@ export default function RestaurantPage() {
               </div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#E3F2FD', color: '#1565C0' }}>💰</div>
+              <div className="kpi-icon" style={{ background: '#E3F2FD', color: '#1565C0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M17 12H7"/></svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">Revenue</p>
                 <h3 className="kpi-value" style={{ color: '#1565C0' }}>₹{revenue.toFixed(0)}</h3>
@@ -253,7 +294,9 @@ export default function RestaurantPage() {
               </div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-icon" style={{ background: '#E0F2F1', color: '#00695C' }}>🌱</div>
+              <div className="kpi-icon" style={{ background: '#E0F2F1', color: '#00695C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.8a7 7 0 0 1-7 8.2z"/><path d="M9 22v-4h4"/></svg>
+              </div>
               <div className="kpi-body">
                 <p className="kpi-label">CO₂ Saved</p>
                 <h3 className="kpi-value" style={{ color: '#00695C' }}>{co2.toFixed(1)} kg</h3>
@@ -382,11 +425,11 @@ export default function RestaurantPage() {
                 <label className="rd-label" style={{marginTop:16}}>Category</label>
                 <div className="rd-cat-grid">
                   {[
-                    {v:'meals',   icon:'🍱', label:'Meals'},
-                    {v:'bakery',  icon:'🥐', label:'Bakery'},
-                    {v:'groceries',icon:'🥬',label:'Groceries'},
-                    {v:'beverages',icon:'🧃',label:'Drinks'},
-                    {v:'other',   icon:'🍽️', label:'Other'},
+                    {v:'meals',   icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle' }}><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>, label:'Meals'},
+                    {v:'bakery',  icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle' }}><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, label:'Bakery'},
+                    {v:'groceries',icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle' }}><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.8a7 7 0 0 1-7 8.2z"/><path d="M9 22v-4h4"/></svg>,label:'Groceries'},
+                    {v:'beverages',icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle' }}><path d="M6 2v20M18 2v20M6 12h12"/></svg>,label:'Drinks'},
+                    {v:'other',   icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>, label:'Other'},
                   ].map(c=>(
                     <button key={c.v} type="button"
                       className={`rd-cat-chip${cat===c.v?' rd-cat-chip--on':''}`}

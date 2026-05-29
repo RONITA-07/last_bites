@@ -22,6 +22,7 @@ function AnimatedNumber({ target, decimals = 1, prefix = '', suffix = '', durati
 }
 
 // ── Eco stat card ───────────────────────────────────────────────────────────────
+// ── Eco stat card ───────────────────────────────────────────────────────────────
 function EcoCard({ icon, label, value, sub, color, bg, delay = 0 }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { const t = setTimeout(() => setVisible(true), delay); return () => clearTimeout(t); }, [delay]);
@@ -32,10 +33,14 @@ function EcoCard({ icon, label, value, sub, color, bg, delay = 0 }) {
       transform: visible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
       opacity: visible ? 1 : 0,
       transition: 'all 0.5s cubic-bezier(0.16,1,0.3,1)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '6px'
     }}>
-      <div style={{ fontSize: '2rem', marginBottom: '8px' }}>{icon}</div>
-      <div style={{ fontSize: '1.6rem', fontWeight: 800, color, lineHeight: 1.1, marginBottom: '4px' }}>{value}</div>
-      <div style={{ fontSize: '0.78rem', fontWeight: 700, color, marginBottom: '2px' }}>{label}</div>
+      <div style={{ color, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{icon}</div>
+      <div style={{ fontSize: '1.6rem', fontWeight: 800, color, lineHeight: 1.1, marginTop: '4px' }}>{value}</div>
+      <div style={{ fontSize: '0.78rem', fontWeight: 700, color }}>{label}</div>
       {sub && <div style={{ fontSize: '0.7rem', color: '#9AA0A6', fontWeight: 500 }}>{sub}</div>}
     </div>
   );
@@ -120,18 +125,22 @@ export default function ConfirmedPage() {
             width: '88px', height: '88px', margin: '0 auto 20px',
             background: 'linear-gradient(135deg, #2f6b4f, #4CAF7A)',
             borderRadius: '50%', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: '2.6rem', color: '#fff',
+            justifyContent: 'center', color: '#fff',
             boxShadow: '0 8px 32px rgba(47,107,79,0.4)',
             animation: show ? 'confirmPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.3s both' : 'none',
-          }}>✓</div>
+          }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
 
           {/* Badge */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E6F4EA', color: '#2f6b4f', padding: '6px 16px', borderRadius: '30px', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
-            🌍 Order Confirmed & Payment Received
+            Order Confirmed & Payment Received
           </div>
 
           <h1 style={{ fontSize: '2.1rem', fontWeight: 800, color: '#1C1C1C', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '10px' }}>
-            Your meal is rescued! 🎉
+            Your meal is rescued!
           </h1>
           <p style={{ color: '#5F6F65', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
             Payment of <strong style={{ color: '#2f6b4f' }}>₹{totalPrice.toFixed(2)}</strong> received via{' '}
@@ -147,7 +156,12 @@ export default function ConfirmedPage() {
             boxShadow: '0 6px 20px rgba(47,107,79,0.25)',
             animation: show ? 'slideUpFade 0.5s 0.5s both' : 'none',
           }}>
-            <div style={{ fontSize: '2.2rem', flexShrink: 0 }}>🕒</div>
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#fff' }}>
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
             <div>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px' }}>
                 Expected Pickup Window
@@ -155,24 +169,19 @@ export default function ConfirmedPage() {
               <p style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 800, marginBottom: '2px' }}>
                 {pickupFormatted || 'See your order details'}
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem', fontWeight: 600 }}>
-                ⚡ {pickupStatus}
+              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>{pickupStatus}</span>
               </p>
             </div>
           </div>
 
-           {/* ── Items ordered ── */}
+          {/* ── Items ordered ── */}
           {order?.items?.length > 0 && (
             <div style={{ background: '#F4F7F5', borderRadius: '14px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#9AA0A6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Items in this order</p>
-              {order.items.map((item, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < order.items.length - 1 ? '1px solid #EAEEF2' : 'none', fontSize: '0.85rem' }}>
-                  <span style={{ color: '#5F6F65', fontWeight: 500 }}>{item.title} ×{item.qty}</span>
-                  <span style={{ fontWeight: 700, color: '#1C1C1C' }}>
-                    {item.price === 0 ? 'Free' : `₹${item.price.toFixed(2)}`}
-                  </span>
-                </div>
-              ))}
               {order.items.map((item, i) => {
                 const formatPrepDate = (dateStr) => {
                   if (!dateStr) return '';
@@ -185,13 +194,15 @@ export default function ConfirmedPage() {
                   } catch (_) {}
                   return dateStr;
                 };
+
                 return (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < order.items.length - 1 ? '1px solid #EAEEF2' : 'none', fontSize: '0.85rem' }}>
                     <div>
                       <span style={{ color: '#5F6F65', fontWeight: 500 }}>{item.title} ×{item.qty}</span>
                       {(item.preparation_date || item.preparation_time) && (
-                        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                          🍳 Prepared: <strong>{formatPrepDate(item.preparation_date)}{item.preparation_time ? ` @ ${item.preparation_time}` : ''}</strong>
+                        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                          Prepared: <strong>{formatPrepDate(item.preparation_date)}{item.preparation_time ? ` @ ${item.preparation_time}` : ''}</strong>
                         </p>
                       )}
                     </div>
@@ -203,29 +214,53 @@ export default function ConfirmedPage() {
               })}
             </div>
           )}
+
           {/* Next steps */}
           <div style={{ textAlign: 'left', marginBottom: '24px' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2f6b4f', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>What happens next?</p>
             {[
-              { icon: '📩', text: 'Order confirmation sent to your email' },
-              { icon: '🏪', text: 'Restaurant is packing your rescue bag' },
-              { icon: '🛍️', text: 'Pick up during the window shown above' },
-              { icon: '🌱', text: 'You just made a real environmental impact!' },
+              { 
+                icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                ), 
+                text: 'Order confirmation sent to your email' 
+              },
+              { 
+                icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9H2V8l10-6 10 6v3h-2v9z"/><path d="M6 12h12v8H6v-8z"/></svg>
+                ), 
+                text: 'Restaurant is packing your rescue bag' 
+              },
+              { 
+                icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                ), 
+                text: 'Pick up during the window shown above' 
+              },
+              { 
+                icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.8a7 7 0 0 1-7 8.2z"/><path d="M9 22v-4h4"/></svg>
+                ), 
+                text: 'You just made a real environmental impact!' 
+              },
             ].map((s, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '9px 0', borderBottom: i < 3 ? '1px solid #EAEEF2' : 'none' }}>
-                <span style={{ fontSize: '1.1rem', width: '26px', textAlign: 'center' }}>{s.icon}</span>
+                <span style={{ display: 'inline-flex', width: '26px', justifyContent: 'center' }}>{s.icon}</span>
                 <span style={{ fontSize: '0.86rem', color: '#5F6F65', fontWeight: 500 }}>{s.text}</span>
               </div>
             ))}
           </div>
+
           {/* CTA + countdown */}
-          <Link href="/consumer" style={{ display: 'block', width: '100%', padding: '15px', background: 'linear-gradient(135deg, #2f6b4f, #4CAF7A)', color: '#fff', borderRadius: '16px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', marginBottom: '12px', boxShadow: '0 6px 20px rgba(47,107,79,0.3)' }}>
-            🛒 Rescue More Meals
+          <Link href="/consumer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '15px', background: 'linear-gradient(135deg, #2f6b4f, #4CAF7A)', color: '#fff', borderRadius: '16px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', marginBottom: '12px', boxShadow: '0 6px 20px rgba(47,107,79,0.3)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Rescue More Meals
           </Link>
           <p style={{ fontSize: '0.75rem', color: '#9AA0A6', fontWeight: 500 }}>
             Auto-redirecting in {count}s…
           </p>
         </div>
+
         {/* ── Carbon Impact Section ── */}
         {show && co2Total > 0 && (
           <div style={{
@@ -236,7 +271,7 @@ export default function ConfirmedPage() {
           }}>
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#E0F2F1', color: '#00695C', padding: '7px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
-                🌍 Your Environmental Contribution
+                Your Environmental Contribution
               </div>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1C1C1C', marginBottom: '6px' }}>
                 You saved{' '}
@@ -248,12 +283,38 @@ export default function ConfirmedPage() {
                 By rescuing {mealsCount} meal{mealsCount > 1 ? 's' : ''} instead of letting them go to waste
               </p>
             </div>
+
             {/* Eco stats grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '14px', marginBottom: '20px' }}>
-              <EcoCard icon="🌳" label="Trees equivalent" value={<AnimatedNumber target={treesEquiv} decimals={2} />} sub="(yearly absorption)" color="#16a34a" bg="#dcfce7" delay={200} />
-              <EcoCard icon="🚗" label="Driving avoided" value={<AnimatedNumber target={kmDriving} decimals={0} suffix=" km" />} sub="avg car emissions" color="#0277BD" bg="#E1F5FE" delay={350} />
-              <EcoCard icon="📱" label="Phones charged" value={<AnimatedNumber target={phonesCharged} decimals={0} />} sub="equivalent charges" color="#6A1B9A" bg="#F3E5F5" delay={500} />
+              <EcoCard 
+                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22V10"/><path d="M12 6a4 4 0 0 0-4 4c0 2 2 3 4 5 2-2 4-3 4-5a4 4 0 0 0-4-4z"/></svg>} 
+                label="Trees equivalent" 
+                value={<AnimatedNumber target={treesEquiv} decimals={2} />} 
+                sub="(yearly absorption)" 
+                color="#16a34a" 
+                bg="#dcfce7" 
+                delay={200} 
+              />
+              <EcoCard 
+                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="22" height="13" rx="2" ry="2"/><path d="M5 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M19 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>} 
+                label="Driving avoided" 
+                value={<AnimatedNumber target={kmDriving} decimals={0} suffix=" km" />} 
+                sub="avg car emissions" 
+                color="#0277BD" 
+                bg="#E1F5FE" 
+                delay={350} 
+              />
+              <EcoCard 
+                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>} 
+                label="Phones charged" 
+                value={<AnimatedNumber target={phonesCharged} decimals={0} />} 
+                sub="equivalent charges" 
+                color="#6A1B9A" 
+                bg="#F3E5F5" 
+                delay={500} 
+              />
             </div>
+
             {/* Big CO2 progress bar */}
             <div style={{ background: '#F4F7F5', borderRadius: '12px', padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -268,34 +329,43 @@ export default function ConfirmedPage() {
                   transition: 'width 1.5s cubic-bezier(0.16,1,0.3,1)',
                 }} />
               </div>
-              <p style={{ fontSize: '0.72rem', color: '#9AA0A6', marginTop: '8px', fontWeight: 500 }}>
-                Every meal rescued = 2.5 kg less CO₂ in our atmosphere 🌿
+              <p style={{ fontSize: '0.72rem', color: '#9AA0A6', marginTop: '8px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                Every meal rescued = 2.5 kg less CO₂ in our atmosphere
               </p>
             </div>
+
             {/* Savings banner */}
             {savingsTotal > 0 && (
               <div style={{ marginTop: '16px', background: 'linear-gradient(135deg, #2f6b4f11, #4CAF7A11)', border: '1px solid #4CAF7A33', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <p style={{ fontSize: '0.78rem', color: '#5F6F65', fontWeight: 600, marginBottom: '2px' }}>💰 Money you saved</p>
+                  <p style={{ fontSize: '0.78rem', color: '#5F6F65', fontWeight: 600, marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#2f6b4f' }}><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M19 7h-6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6Z"/></svg>
+                    Money you saved
+                  </p>
                   <p style={{ fontSize: '1.2rem', fontWeight: 800, color: '#2f6b4f' }}>
                     <AnimatedNumber target={savingsTotal} decimals={2} prefix="₹" />
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: '0.78rem', color: '#5F6F65', fontWeight: 600, marginBottom: '2px' }}>🍱 Meals rescued</p>
+                  <p style={{ fontSize: '0.78rem', color: '#5F6F65', fontWeight: 600, marginBottom: '2px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#1565C0' }}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    Meals rescued
+                  </p>
                   <p style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1565C0' }}>{mealsCount}</p>
                 </div>
               </div>
             )}
           </div>
         )}
+
         {/* ── Share impact ── */}
         {show && (
           <div style={{ textAlign: 'center', color: '#9AA0A6', fontSize: '0.78rem', fontWeight: 500, animation: 'slideUpFade 0.5s 0.8s both' }}>
-            🌱 Share your impact and inspire others to rescue surplus meals!
+            Share your impact and inspire others to rescue surplus meals!
           </div>
         )}
       </div>
+
       <style>{`
         @keyframes confirmPop   { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes slideUpFade  { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

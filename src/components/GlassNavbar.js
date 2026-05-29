@@ -20,7 +20,7 @@ export default function GlassNavbar() {
   const [walletLoading, setWalletLoading] = useState(false);
   const [coinsBalance, setCoinsBalance] = useState(0);
   const [coinsLoading, setCoinsLoading] = useState(false);
-  
+
   const [topupAmount, setTopupAmount] = useState('');
   const [topupLoading, setTopupLoading] = useState(false);
   const [topupSuccess, setTopupSuccess] = useState(false);
@@ -30,7 +30,7 @@ export default function GlassNavbar() {
     if (!user) return;
     setShowCustomerModal(true);
     setActiveTab('impact');
-    
+
     // Fetch wallet balance
     setWalletLoading(true);
     fetch(`http://localhost:5000/api/auth/wallet/${user.id}`)
@@ -91,13 +91,13 @@ export default function GlassNavbar() {
     e.preventDefault();
     setTopupError('');
     setTopupSuccess(false);
-    
+
     const amount = Number(topupAmount);
     if (isNaN(amount) || amount <= 0) {
       setTopupError('Please enter a valid amount.');
       return;
     }
-    
+
     setTopupLoading(true);
     try {
       // 1. Create Order on Backend
@@ -148,7 +148,7 @@ export default function GlassNavbar() {
               const updatedUser = { ...user, walletBalance: topupData.walletBalance };
               localStorage.setItem('decarb_user', JSON.stringify(updatedUser));
               window.dispatchEvent(new Event('auth-change'));
-              
+
               setTopupAmount('');
               setTopupSuccess(true);
               setTimeout(() => setTopupSuccess(false), 3000);
@@ -176,12 +176,12 @@ export default function GlassNavbar() {
       } else {
         // Fallback: Simulated Test Payment (No keys configured, or keys are mock)
         console.log('[Razorpay] Simulated payment mode active.');
-        setTopupError('💳 Launching Simulated Test Payment... (No real keys configured)');
-        
+        setTopupError('Launching Simulated Test Payment... (No real keys configured)');
+
         setTimeout(async () => {
           try {
             setTopupError('');
-            
+
             // Call verify with mock order ID
             const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
               method: 'POST',
@@ -209,7 +209,7 @@ export default function GlassNavbar() {
             const updatedUser = { ...user, walletBalance: topupData.walletBalance };
             localStorage.setItem('decarb_user', JSON.stringify(updatedUser));
             window.dispatchEvent(new Event('auth-change'));
-            
+
             setTopupAmount('');
             setTopupSuccess(true);
             setTimeout(() => setTopupSuccess(false), 3000);
@@ -291,8 +291,8 @@ export default function GlassNavbar() {
       <Link href={
         user
           ? user.role === 'customer' ? '/consumer'
-          : user.role === 'restaurant' ? '/restaurant'
-          : '/ngo'
+            : user.role === 'restaurant' ? '/restaurant'
+              : '/ngo'
           : '/'
       } style={{
         display: 'flex',
@@ -425,7 +425,7 @@ export default function GlassNavbar() {
         {user ? (
           <>
             {user.role === 'customer' ? (
-              <button 
+              <button
                 onClick={openCustomerModal}
                 style={{
                   fontSize: '0.85rem',
@@ -495,19 +495,33 @@ export default function GlassNavbar() {
       {/* ── Customer Profile & Dashboard Modal ── */}
       {showCustomerModal && user && (
         <div className="modal-overlay" onClick={() => setShowCustomerModal(false)}>
-          <div 
-            className="modal-card animate-fade-in" 
-            style={{ maxWidth: '600px', width: '90%', padding: '28px', borderRadius: '24px' }} 
+          <div
+            className="modal-card animate-fade-in"
+            style={{ maxWidth: '600px', width: '90%', padding: '28px', borderRadius: '24px' }}
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '14px' }}>
               <div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', fontFamily: "'Outfit', sans-serif" }}>Hi, {user.name} 🍀 <span style={{ fontSize: '1.1rem', color: '#d97706', fontWeight: 700, marginLeft: '8px' }}>🪙 {coinsBalance} Coins</span></h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', fontFamily: "'Outfit', sans-serif", display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  Hi, {user.name}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6b4f" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z" />
+                    <path d="M9 22v-4" />
+                  </svg>
+                  <span style={{ fontSize: '1.1rem', color: '#d97706', fontWeight: 700, marginLeft: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                      <circle cx="12" cy="12" r="8" />
+                      <line x1="12" y1="8" x2="12" y2="16" />
+                      <line x1="9" y1="12" x2="15" y2="12" />
+                    </svg>
+                    {coinsBalance} Coins
+                  </span>
+                </h2>
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Customer Profile & Dashboard</p>
               </div>
-              <button 
-                onClick={() => setShowCustomerModal(false)} 
+              <button
+                onClick={() => setShowCustomerModal(false)}
                 style={{ background: 'none', border: 'none', fontSize: '1.6rem', cursor: 'pointer', color: 'var(--text-secondary)', lineHeight: 1 }}
               >
                 &times;
@@ -516,38 +530,54 @@ export default function GlassNavbar() {
 
             {/* Tabs menu */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '12px', flexWrap: 'wrap' }}>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setActiveTab('impact')}
                 style={{
                   background: activeTab === 'impact' ? 'var(--primary)' : 'none',
                   color: activeTab === 'impact' ? '#fff' : 'var(--text-secondary)',
-                  padding: '8px 16px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'var(--transition-smooth)'
+                  padding: '8px 16px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'var(--transition-smooth)',
+                  display: 'flex', alignItems: 'center', gap: '6px'
                 }}
               >
-                🌱 My Impact
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z" />
+                  <path d="M9 22v-4" />
+                </svg>
+                My Impact
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setActiveTab('orders')}
                 style={{
                   background: activeTab === 'orders' ? 'var(--primary)' : 'none',
                   color: activeTab === 'orders' ? '#fff' : 'var(--text-secondary)',
-                  padding: '8px 16px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'var(--transition-smooth)'
+                  padding: '8px 16px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'var(--transition-smooth)',
+                  display: 'flex', alignItems: 'center', gap: '6px'
                 }}
               >
-                🛍️ Past Orders
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                Past Orders
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setActiveTab('wallet')}
                 style={{
                   background: activeTab === 'wallet' ? 'var(--primary)' : 'none',
                   color: activeTab === 'wallet' ? '#fff' : 'var(--text-secondary)',
-                  padding: '8px 16px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'var(--transition-smooth)'
+                  padding: '8px 16px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'var(--transition-smooth)',
+                  display: 'flex', alignItems: 'center', gap: '6px'
                 }}
               >
-                👛 LastBite Wallet
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <line x1="12" y1="4" x2="12" y2="20" />
+                </svg>
+                LastBite Wallet
               </button>
             </div>
 
@@ -562,22 +592,39 @@ export default function GlassNavbar() {
                   ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                       <div style={{ background: 'var(--accent)', borderRadius: '18px', padding: '16px', textAlign: 'center', border: '1px solid rgba(47,107,79,0.1)' }}>
-                        <span style={{ fontSize: '2rem' }}>🍲</span>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto' }}>
+                          <path d="M3 12h18" />
+                          <path d="M3 12a9 9 0 0 0 18 0" />
+                          <path d="M12 2v6" />
+                          <path d="M8 4v4" />
+                          <path d="M16 4v4" />
+                        </svg>
                         <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--primary)', margin: '6px 0 2px' }}>{impactStats.mealsRescued}</h4>
                         <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Meals Rescued</p>
                       </div>
                       <div style={{ background: '#E1F5FE', borderRadius: '18px', padding: '16px', textAlign: 'center', border: '1px solid rgba(2,136,209,0.1)' }}>
-                        <span style={{ fontSize: '2rem' }}>🌱</span>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0288D1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto' }}>
+                          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z" />
+                          <path d="M9 22v-4" />
+                        </svg>
                         <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0288D1', margin: '6px 0 2px' }}>{impactStats.co2Saved} kg</h4>
                         <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CO₂ Saved</p>
                       </div>
                       <div style={{ background: '#E8F5E9', borderRadius: '18px', padding: '16px', textAlign: 'center', gridColumn: 'span 2', border: '1px solid rgba(46,125,50,0.1)' }}>
-                        <span style={{ fontSize: '2rem' }}>🌳</span>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto' }}>
+                          <path d="M12 20V10" />
+                          <path d="M18 10a6 6 0 0 0-12 0c0 3 3 3 3 6h6s3 0 3-6z" />
+                          <path d="M12 20h4M12 20H8" />
+                        </svg>
                         <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#2E7D32', margin: '6px 0 2px' }}>{(impactStats.co2Saved / 20).toFixed(1)} trees</h4>
                         <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Annual Tree Absorption Equivalent</p>
                       </div>
                       <div style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderRadius: '18px', padding: '16px', textAlign: 'center', gridColumn: 'span 2', border: '1px solid rgba(217,119,6,0.1)' }}>
-                        <span style={{ fontSize: '2rem' }}>🪙</span>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto' }}>
+                          <circle cx="12" cy="12" r="8" />
+                          <line x1="12" y1="8" x2="12" y2="16" />
+                          <line x1="9" y1="12" x2="15" y2="12" />
+                        </svg>
                         <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#d97706', margin: '6px 0 2px' }}>{coinsBalance} Coins</h4>
                         <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Value: ₹{(coinsBalance / 100).toFixed(2)} (Redeemable at checkout)</p>
                       </div>
@@ -594,8 +641,14 @@ export default function GlassNavbar() {
                     <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading past rescues...</div>
                   ) : orders.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
-                      <span style={{ fontSize: '2rem' }}>🛍️</span>
-                      <p style={{ fontSize: '0.88rem', marginTop: '10px' }}>No orders placed yet. Rescue some delicious meals nearby!</p>
+                      <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                          <line x1="3" y1="6" x2="21" y2="6" />
+                          <path d="M16 10a4 4 0 0 1-8 0" />
+                        </svg>
+                      </div>
+                      <p style={{ fontSize: '0.88rem' }}>No orders placed yet. Rescue some delicious meals nearby!</p>
                     </div>
                   ) : (
                     <div style={{ maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
@@ -603,14 +656,14 @@ export default function GlassNavbar() {
                         const listing = order.food_id || {};
                         const restName = listing.restaurant_id?.name || 'Partner Store';
                         const dateStr = new Date(order.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                        
+
                         return (
-                          <div 
-                            key={order._id} 
-                            style={{ 
-                              display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-                              background: 'var(--surface-alt)', borderRadius: '12px', padding: '12px', 
-                              border: '1px solid var(--border)' 
+                          <div
+                            key={order._id}
+                            style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                              background: 'var(--surface-alt)', borderRadius: '12px', padding: '12px',
+                              border: '1px solid var(--border)'
                             }}
                           >
                             <div>
@@ -621,7 +674,7 @@ export default function GlassNavbar() {
                             <div style={{ textAlign: 'right' }}>
                               <strong style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>₹{order.total_price.toFixed(2)}</strong>
                               <div>
-                                <span style={{ 
+                                <span style={{
                                   fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', padding: '2px 6px', borderRadius: '6px', marginTop: '4px', display: 'inline-block',
                                   background: order.status === 'completed' ? '#dcfce7' : order.status === 'picked' ? '#e0f2fe' : '#fef3c7',
                                   color: order.status === 'completed' ? '#15803d' : order.status === 'picked' ? '#0369a1' : '#b45309'
@@ -642,8 +695,13 @@ export default function GlassNavbar() {
               {activeTab === 'wallet' && (
                 <div>
                   <div style={{ background: 'var(--accent)', borderRadius: '18px', padding: '16px', textAlign: 'center', marginBottom: '16px', border: '1px solid rgba(47,107,79,0.1)' }}>
-                    <span style={{ fontSize: '2rem' }}>👛</span>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '6px' }}>LastBite Wallet Balance</p>
+                    <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--primary)', marginBottom: '6px' }}>
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <line x1="12" y1="4" x2="12" y2="20" />
+                      </svg>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>LastBite Wallet Balance</p>
                     {walletLoading ? (
                       <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)', marginTop: '2px' }}>Loading...</h3>
                     ) : (
@@ -653,37 +711,48 @@ export default function GlassNavbar() {
                   </div>
 
                   <div style={{ background: 'var(--surface-alt)', borderRadius: '18px', padding: '14px', border: '1px solid var(--border)' }}>
-                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px' }}>➕ Top Up Wallet</h4>
-                    
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Top Up Wallet
+                    </h4>
+
                     {topupSuccess && (
                       <div style={{ background: '#E6F4EA', color: '#2f6b4f', padding: '8px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '10px' }}>
-                        ✓ Wallet topped up successfully!
+                        Wallet topped up successfully!
                       </div>
                     )}
                     {topupError && (
-                      <div style={{ background: '#FCE8E6', color: '#C5221F', padding: '8px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '10px' }}>
-                        ⚠ {topupError}
+                      <div style={{ background: '#FCE8E6', color: '#C5221F', padding: '8px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                          <line x1="12" y1="9" x2="12" y2="13" />
+                          <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        {topupError}
                       </div>
                     )}
 
                     <form onSubmit={handleTopup} style={{ display: 'flex', gap: '8px' }}>
                       <div style={{ position: 'relative', flexGrow: 1 }}>
                         <span style={{ position: 'absolute', left: '12px', top: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>₹</span>
-                        <input 
-                          type="number" 
-                          min="1" 
-                          placeholder="Amount to add (e.g. 500)" 
-                          value={topupAmount} 
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="Amount to add (e.g. 500)"
+                          value={topupAmount}
                           onChange={e => setTopupAmount(e.target.value)}
-                          className="form-input" 
+                          className="form-input"
                           style={{ paddingLeft: '22px', height: '40px', fontSize: '0.9rem' }}
                           required
                         />
                       </div>
-                      <button 
-                        type="submit" 
-                        disabled={topupLoading} 
-                        className="btn btn-primary" 
+                      <button
+                        type="submit"
+                        disabled={topupLoading}
+                        className="btn btn-primary"
                         style={{ height: '40px', padding: '0 16px', borderRadius: 'var(--radius-md)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
                       >
                         {topupLoading ? 'Adding...' : 'Add Funds'}

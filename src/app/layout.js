@@ -12,10 +12,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="https://checkout.razorpay.com/v1/checkout.js" defer />
-        
-        
         <script
           dangerouslySetInnerHTML={{
             __html: `

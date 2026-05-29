@@ -6,21 +6,18 @@ import Link from 'next/link';
 /* ─── Role Config ─────────────────────────────────────────────────────────── */
 const ROLES = {
   customer: {
-    icon: '😋',
     label: 'Customer',
     color: '#2f6b4f',
     bg: 'linear-gradient(135deg,#E6F4EA 0%,#A8E6CF 100%)',
     tagline: 'Rescue surplus meals at incredible discounts',
   },
   restaurant: {
-    icon: '🍳',
     label: 'Restaurant',
     color: '#E65100',
     bg: 'linear-gradient(135deg,#FFF3E0 0%,#FFCCBC 100%)',
     tagline: 'Turn food waste into revenue and impact',
   },
   ngo: {
-    icon: '🌱',
     label: 'NGO',
     color: '#1565C0',
     bg: 'linear-gradient(135deg,#E3F2FD 0%,#B3E5FC 100%)',
@@ -31,13 +28,12 @@ const ROLES = {
 /* ─── Success screens ─────────────────────────────────────────────────────── */
 const SUCCESS = {
   customer: {
-    emoji: '🌍',
     headline: 'Welcome to the green side!',
     sub: 'Every meal you rescue shrinks your carbon footprint. The planet thanks you.',
     facts: [
-      '🥗 1 rescued meal saves ~2.5 kg of CO₂',
-      '🌿 You join 1,000+ eco-conscious rescuers',
-      '♻️ Together we are building a zero-waste future',
+      { text: '1 rescued meal saves ~2.5 kg of CO₂', type: 'leaf' },
+      { text: 'You join 1,000+ eco-conscious rescuers', type: 'users' },
+      { text: 'Together we are building a zero-waste future', type: 'recycle' },
     ],
     btn: 'Start Rescuing Meals →',
     href: '/consumer',
@@ -45,13 +41,12 @@ const SUCCESS = {
     bgGrad: 'linear-gradient(135deg,#E6F4EA,#A8E6CF)',
   },
   restaurant: {
-    emoji: '🎉',
     headline: 'Welcome aboard, partner!',
     sub: 'Your restaurant is now part of the zero-waste movement. Start listing surplus food and recover lost revenue.',
     facts: [
-      '💰 Recover up to 40% of surplus food value',
-      '📈 Gain visibility with eco-conscious customers',
-      '🌍 Every listing lowers your restaurant\'s carbon footprint',
+      { text: 'Recover up to 40% of surplus food value', type: 'money' },
+      { text: 'Gain visibility with eco-conscious customers', type: 'eye' },
+      { text: 'Every listing lowers your restaurant\'s carbon footprint', type: 'leaf' },
     ],
     btn: 'Open Your Dashboard →',
     href: '/restaurant',
@@ -59,13 +54,12 @@ const SUCCESS = {
     bgGrad: 'linear-gradient(135deg,#FFF3E0,#FFCCBC)',
   },
   ngo: {
-    emoji: '🙏',
     headline: 'Thank you for making a difference!',
     sub: 'Your registration is under review. Once verified, you will have full access to claim free food donations for your community.',
     facts: [
-      '✅ Registration submitted for verification',
-      '📬 You will receive a confirmation email shortly',
-      '🤝 Together we eliminate hunger and food waste',
+      { text: 'Registration submitted for verification', type: 'check' },
+      { text: 'You will receive a confirmation email shortly', type: 'mail' },
+      { text: 'Together we eliminate hunger and food waste', type: 'users' },
     ],
     btn: 'Explore the NGO Portal →',
     href: '/ngo',
@@ -73,6 +67,126 @@ const SUCCESS = {
     bgGrad: 'linear-gradient(135deg,#E3F2FD,#B3E5FC)',
   },
 };
+
+/* ─── Thin-Stroke SVG Icon Helpers ────────────────────────────────────────── */
+function renderRoleIcon(role, size = 36, color = 'var(--primary)') {
+  if (role === 'customer') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+        <path d="M3 2h1l1.5 9h11l1.5-9H21" />
+        <circle cx="9" cy="20" r="1" />
+        <circle cx="17" cy="20" r="1" />
+      </svg>
+    );
+  }
+  if (role === 'restaurant') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8M12 17v4" />
+      </svg>
+    );
+  }
+  if (role === 'ngo') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    );
+  }
+  return null;
+}
+
+function renderSuccessIcon(role, size = 80, color = 'currentColor') {
+  if (role === 'customer') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    );
+  }
+  if (role === 'restaurant') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+        <circle cx="12" cy="12" r="10" />
+      </svg>
+    );
+  }
+  if (role === 'ngo') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
+      </svg>
+    );
+  }
+  return null;
+}
+
+function renderFactIcon(type, color = 'currentColor', size = 18) {
+  if (type === 'leaf') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8a7 7 0 0 1-9 8.2z" />
+        <path d="M9 22v-4" />
+      </svg>
+    );
+  }
+  if (type === 'users') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    );
+  }
+  if (type === 'recycle') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+        <path d="M21.5 2v6h-6" />
+        <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+      </svg>
+    );
+  }
+  if (type === 'money') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+        <line x1="12" y1="1" x2="12" y2="23" />
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+    );
+  }
+  if (type === 'eye') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    );
+  }
+  if (type === 'check') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+        <circle cx="12" cy="12" r="10" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+    );
+  }
+  if (type === 'mail') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+    );
+  }
+  return null;
+}
 
 /* ─── Small helpers ───────────────────────────────────────────────────────── */
 function Label({ children }) {
@@ -198,7 +312,12 @@ function RegisterContent() {
 
         <div className="animate-fade-in" style={{ textAlign: 'center', marginBottom: '48px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--accent)', color: 'var(--primary)', padding: '8px 18px', borderRadius: '30px', fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '18px' }}>
-            🌍 Join the zero-waste movement
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            Join the zero-waste movement
           </div>
           <h1 style={{ fontSize: '3.2rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '12px', letterSpacing: '-0.03em' }}>
             Create Your Account
@@ -216,7 +335,7 @@ function RegisterContent() {
               className="floating-card hover-lift"
               style={{ width: '260px', padding: '36px 28px', textAlign: 'center', cursor: 'pointer', background: cfg.bg, border: 'none' }}
             >
-              <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>{cfg.icon}</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>{renderRoleIcon(key, 56, cfg.color)}</div>
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: cfg.color, marginBottom: '8px' }}>
                 I&apos;m a {cfg.label}
               </h2>
@@ -245,9 +364,9 @@ function RegisterContent() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 60px', background: sc.bgGrad }}>
         <div className="floating-card animate-fade-in" style={{ maxWidth: '540px', width: '100%', padding: '52px 44px', textAlign: 'center', background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)' }}>
 
-          {/* Animated emoji */}
-          <div className="animate-float" style={{ fontSize: '5rem', marginBottom: '20px', lineHeight: 1 }}>
-            {sc.emoji}
+          {/* Animated SVG icon */}
+          <div className="animate-float" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', lineHeight: 1 }}>
+            {renderSuccessIcon(role, 80, sc.accent)}
           </div>
 
           <h1 style={{ fontSize: '2rem', fontWeight: 800, color: sc.accent, marginBottom: '14px', letterSpacing: '-0.02em' }}>
@@ -261,7 +380,8 @@ function RegisterContent() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '36px', textAlign: 'left' }}>
             {sc.facts.map((f, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', background: 'rgba(255,255,255,0.7)', padding: '12px 16px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)', border: `1px solid rgba(0,0,0,0.06)` }}>
-                {f}
+                {renderFactIcon(f.type, sc.accent)}
+                <span>{f.text}</span>
               </div>
             ))}
           </div>
@@ -284,7 +404,7 @@ function RegisterContent() {
 
       {/* Left Panel — branding */}
       <div style={{ background: cfg.bg, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '80px 48px', textAlign: 'center' }}>
-        <div className="animate-float" style={{ fontSize: '6rem', marginBottom: '24px', lineHeight: 1 }}>{cfg.icon}</div>
+        <div className="animate-float" style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px', lineHeight: 1 }}>{renderRoleIcon(role, 96, cfg.color)}</div>
         <h2 style={{ fontSize: '2rem', fontWeight: 800, color: cfg.color, marginBottom: '12px' }}>
           Join as {cfg.label}
         </h2>
@@ -316,8 +436,8 @@ function RegisterContent() {
             ← Change role
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent)', padding: '6px 14px', borderRadius: '20px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: cfg.color, textTransform: 'uppercase' }}>
-              {cfg.icon} {cfg.label}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: cfg.color, textTransform: 'uppercase' }}>
+              {renderRoleIcon(role, 14, cfg.color)} {cfg.label}
             </span>
           </div>
         </div>
@@ -331,7 +451,12 @@ function RegisterContent() {
 
         {error && (
           <div style={{ background: '#FCE8E6', color: '#C5221F', padding: '14px 16px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 600, marginBottom: '24px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-            <span>⚠️</span> {error}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C5221F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
@@ -387,13 +512,25 @@ function RegisterContent() {
                 >
                   {certFile ? (
                     <>
-                      <div style={{ fontSize: '1.8rem', marginBottom: '6px' }}>📄</div>
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1565C0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                          <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                      </div>
                       <p style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1565C0' }}>{certName}</p>
                       <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '3px' }}>Click to change</p>
                     </>
                   ) : (
                     <>
-                      <div style={{ fontSize: '1.8rem', marginBottom: '6px' }}>📎</div>
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                        </svg>
+                      </div>
                       <p style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
                         Click to upload your certificate
                       </p>
@@ -422,7 +559,13 @@ function RegisterContent() {
 
           {/* ── Address Fields ── */}
           <div>
-            <Label>📍 Your Location</Label>
+            <Label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              Your Location
+            </Label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
               {/* Area */}

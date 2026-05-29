@@ -1,7 +1,6 @@
-"use client";
 import { useState } from 'react';
-import FloatingCard from './FloatingCard';
 import { useCart } from './CartContext';
+import FloatingCard from './FloatingCard';
 
 export default function FoodCard({ listing, userRole, loadingId, onOrder }) {
   const {
@@ -57,15 +56,17 @@ export default function FoodCard({ listing, userRole, loadingId, onOrder }) {
 
         {/* Distance badge */}
         {distance !== undefined && (
-          <div style={{ position: 'absolute', bottom: '12px', left: '12px', background: 'var(--glass)', backdropFilter: 'blur(4px)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>
-            📍 {distance} km away
+          <div style={{ position: 'absolute', bottom: '12px', left: '12px', background: 'var(--glass)', backdropFilter: 'blur(4px)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="12" r="3" /></svg>
+            {distance} km away
           </div>
         )}
 
         {/* In-cart badge */}
         {inCart && (
-          <div style={{ position: 'absolute', top: '12px', left: '12px', background: '#16a34a', color: '#fff', padding: '4px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 700 }}>
-            🛒 ×{cartItem.qty} in cart
+          <div style={{ position: 'absolute', top: '12px', left: '12px', background: '#16a34a', color: '#fff', padding: '4px 10px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>
+            ×{cartItem.qty} in cart
           </div>
         )}
       </div>
@@ -84,10 +85,19 @@ export default function FoodCard({ listing, userRole, loadingId, onOrder }) {
           {/* Logistics */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '16px', borderTop: '1px solid rgba(95,111,101,0.1)', paddingTop: '10px' }}>
             {(listing.preparation_date || listing.preparation_time) && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>🍳 Prepared: <strong>{formatPrepDate(listing.preparation_date)}{listing.preparation_time ? ` @ ${listing.preparation_time}` : ''}</strong></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M3 12h18" /><path d="M3 12a9 9 0 0 0 18 0" /><path d="M12 2v6" /></svg>
+                Prepared: <strong>{formatPrepDate(listing.preparation_date)}{listing.preparation_time ? ` @ ${listing.preparation_time}` : ''}</strong>
+              </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>🕒 Pickup: <strong>{formattedTime}</strong></div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>📦 Stock: <strong>{quantity} left</strong></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              Pickup: <strong>{formattedTime}</strong>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>
+              Stock: <strong>{quantity} left</strong>
+            </div>
           </div>
         </div>
 
@@ -125,9 +135,9 @@ export default function FoodCard({ listing, userRole, loadingId, onOrder }) {
               onClick={handleAddToCart}
               disabled={!isAvailable}
               className={`btn ${isAvailable ? 'btn-primary' : 'btn-danger'}`}
-              style={{ width: '100%', padding: '12px', borderRadius: '16px', fontSize: '0.9rem', position: 'relative', overflow: 'hidden', transition: 'all 0.25s' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '16px', fontSize: '0.9rem', position: 'relative', overflow: 'hidden', transition: 'all 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
-              {addedFlash ? '✔ Added to Cart!' : isAvailable ? (isFree ? '🛒 Add Free Item' : '🛒 Add to Cart') : (status === 'sold' ? 'Already Rescued' : 'Expired')}
+              {addedFlash ? 'Added to Cart!' : isAvailable ? (isFree ? 'Add Free Item' : 'Add to Cart') : (status === 'sold' ? 'Already Rescued' : 'Expired')}
             </button>
           ) : userRole === 'ngo' ? (
             <button
