@@ -161,7 +161,7 @@ export default function ConfirmedPage() {
             </div>
           </div>
 
-          {/* ── Items ordered ── */}
+           {/* ── Items ordered ── */}
           {order?.items?.length > 0 && (
             <div style={{ background: '#F4F7F5', borderRadius: '14px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#9AA0A6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Items in this order</p>
@@ -173,9 +173,36 @@ export default function ConfirmedPage() {
                   </span>
                 </div>
               ))}
+              {order.items.map((item, i) => {
+                const formatPrepDate = (dateStr) => {
+                  if (!dateStr) return '';
+                  try {
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                      return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                    }
+                  } catch (_) {}
+                  return dateStr;
+                };
+                return (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < order.items.length - 1 ? '1px solid #EAEEF2' : 'none', fontSize: '0.85rem' }}>
+                    <div>
+                      <span style={{ color: '#5F6F65', fontWeight: 500 }}>{item.title} ×{item.qty}</span>
+                      {(item.preparation_date || item.preparation_time) && (
+                        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                          🍳 Prepared: <strong>{formatPrepDate(item.preparation_date)}{item.preparation_time ? ` @ ${item.preparation_time}` : ''}</strong>
+                        </p>
+                      )}
+                    </div>
+                    <span style={{ fontWeight: 700, color: '#1C1C1C' }}>
+                      {item.price === 0 ? 'Free' : `₹${item.price.toFixed(2)}`}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
-
           {/* Next steps */}
           <div style={{ textAlign: 'left', marginBottom: '24px' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2f6b4f', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>What happens next?</p>
@@ -191,7 +218,6 @@ export default function ConfirmedPage() {
               </div>
             ))}
           </div>
-
           {/* CTA + countdown */}
           <Link href="/consumer" style={{ display: 'block', width: '100%', padding: '15px', background: 'linear-gradient(135deg, #2f6b4f, #4CAF7A)', color: '#fff', borderRadius: '16px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', marginBottom: '12px', boxShadow: '0 6px 20px rgba(47,107,79,0.3)' }}>
             🛒 Rescue More Meals
@@ -200,7 +226,6 @@ export default function ConfirmedPage() {
             Auto-redirecting in {count}s…
           </p>
         </div>
-
         {/* ── Carbon Impact Section ── */}
         {show && co2Total > 0 && (
           <div style={{
@@ -223,14 +248,12 @@ export default function ConfirmedPage() {
                 By rescuing {mealsCount} meal{mealsCount > 1 ? 's' : ''} instead of letting them go to waste
               </p>
             </div>
-
             {/* Eco stats grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '14px', marginBottom: '20px' }}>
               <EcoCard icon="🌳" label="Trees equivalent" value={<AnimatedNumber target={treesEquiv} decimals={2} />} sub="(yearly absorption)" color="#16a34a" bg="#dcfce7" delay={200} />
               <EcoCard icon="🚗" label="Driving avoided" value={<AnimatedNumber target={kmDriving} decimals={0} suffix=" km" />} sub="avg car emissions" color="#0277BD" bg="#E1F5FE" delay={350} />
               <EcoCard icon="📱" label="Phones charged" value={<AnimatedNumber target={phonesCharged} decimals={0} />} sub="equivalent charges" color="#6A1B9A" bg="#F3E5F5" delay={500} />
             </div>
-
             {/* Big CO2 progress bar */}
             <div style={{ background: '#F4F7F5', borderRadius: '12px', padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -249,7 +272,6 @@ export default function ConfirmedPage() {
                 Every meal rescued = 2.5 kg less CO₂ in our atmosphere 🌿
               </p>
             </div>
-
             {/* Savings banner */}
             {savingsTotal > 0 && (
               <div style={{ marginTop: '16px', background: 'linear-gradient(135deg, #2f6b4f11, #4CAF7A11)', border: '1px solid #4CAF7A33', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -267,7 +289,6 @@ export default function ConfirmedPage() {
             )}
           </div>
         )}
-
         {/* ── Share impact ── */}
         {show && (
           <div style={{ textAlign: 'center', color: '#9AA0A6', fontSize: '0.78rem', fontWeight: 500, animation: 'slideUpFade 0.5s 0.8s both' }}>
@@ -275,7 +296,6 @@ export default function ConfirmedPage() {
           </div>
         )}
       </div>
-
       <style>{`
         @keyframes confirmPop   { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes slideUpFade  { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

@@ -60,7 +60,17 @@ export default function CartPage() {
                 ? listing.restaurant_id.name : 'Partner Store';
               const pickupTime  = new Date(listing.pickup_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 + ' – ' + new Date(listing.pickup_time).toLocaleDateString([], { month: 'short', day: 'numeric' });
-
+              const formatPrepDate = (dateStr) => {
+                if (!dateStr) return '';
+                try {
+                  const parts = dateStr.split('-');
+                  if (parts.length === 3) {
+                    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                  }
+                } catch (_) {}
+                return dateStr;
+              };
               return (
                 <div key={listing._id} className="cart-item">
                   {/* Thumbnail */}
@@ -68,17 +78,20 @@ export default function CartPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={listing.image} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-
                   {/* Details */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}>
                       {restaurantName}
                     </p>
                     <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '4px', lineHeight: 1.2 }}>{listing.title}</h3>
+                    {(listing.preparation_date || listing.preparation_time) && (
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                        🍳 Prepared: <strong>{formatPrepDate(listing.preparation_date)}{listing.preparation_time ? ` @ ${listing.preparation_time}` : ''}</strong>
+                      </p>
+                    )}
                     <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>
                       🕒 Pickup: {pickupTime}
                     </p>
-
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                       {/* Qty stepper */}
                       <div className="qty-stepper">
@@ -86,12 +99,10 @@ export default function CartPage() {
                         <span className="qty-value">{qty}</span>
                         <button onClick={() => updateQty(listing._id, qty + 1)} disabled={qty >= maxQty} className="qty-btn" aria-label="Increase">+</button>
                       </div>
-
                       {/* Remove */}
                       <button onClick={() => removeItem(listing._id)} className="remove-btn">🗑 Remove</button>
                     </div>
                   </div>
-
                   {/* Price */}
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     {isFree ? (
@@ -117,11 +128,9 @@ export default function CartPage() {
               );
             })}
           </div>
-
           {/* ── Order Summary ── */}
           <div className="cart-summary">
             <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '20px', color: '#1C1C1C' }}>Order Summary</h2>
-
             <div className="summary-row">
               <span>Items ({totalItems})</span>
               <span>₹{totalPrice.toFixed(2)}</span>
@@ -134,22 +143,18 @@ export default function CartPage() {
               <span>🌱 CO₂ Saved</span>
               <span>{co2Total.toFixed(1)} kg</span>
             </div>
-
             <div style={{ borderTop: '2px solid #EAEEF2', margin: '16px 0', paddingTop: '16px' }}>
               <div className="summary-row summary-row--total">
                 <span>Total</span>
                 <span>₹{totalPrice.toFixed(2)}</span>
               </div>
             </div>
-
             <Link href="/consumer/checkout" className="checkout-btn">
               Proceed to Payment →
             </Link>
-
             <Link href="/consumer" style={{ display: 'block', textAlign: 'center', marginTop: '12px', fontSize: '0.82rem', color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
               ← Continue Shopping
             </Link>
-
             {/* Eco message */}
             <div style={{ marginTop: '20px', background: '#E0F2F1', borderRadius: '12px', padding: '12px 14px', fontSize: '0.78rem', color: '#00695C', fontWeight: 600, textAlign: 'center' }}>
               🌍 Your order prevents {co2Total.toFixed(1)} kg of CO₂ emissions

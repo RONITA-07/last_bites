@@ -363,6 +363,8 @@ export default function CheckoutPage() {
           price: Number(i.listing.price) * i.qty,
           restaurantName: typeof i.listing.restaurant_id === 'object' && i.listing.restaurant_id
             ? i.listing.restaurant_id.name : 'Partner Store',
+             preparation_date: i.listing.preparation_date,
+          preparation_time: i.listing.preparation_time,
           pickup_time: i.listing.pickup_time,
         })),
         totalPrice: finalPrice,
@@ -580,7 +582,6 @@ export default function CheckoutPage() {
             {/* ── Right: Summary ── */}
             <div className="cart-summary">
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '16px' }}>Order Summary</h2>
-
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
                 {items.map(({ listing, qty }) => (
                   <div key={listing._id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
@@ -592,8 +593,37 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                 ))}
+                {items.map(({ listing, qty }) => {
+                  const formatPrepDate = (dateStr) => {
+                    if (!dateStr) return '';
+                    try {
+                      const parts = dateStr.split('-');
+                      if (parts.length === 3) {
+                        const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                        return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                      }
+                    } catch (_) {}
+                    return dateStr;
+                  };
+                  return (
+                    <div key={listing._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
+                      <div>
+                        <span style={{ color: '#5F6F65', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                          {listing.title} ×{qty}
+                        </span>
+                        {(listing.preparation_date || listing.preparation_time) && (
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
+                            🍳 Prepared: <strong>{formatPrepDate(listing.preparation_date)}{listing.preparation_time ? ` @ ${listing.preparation_time}` : ''}</strong>
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontWeight: 700, color: '#1C1C1C' }}>
+                        {Number(listing.price) === 0 ? 'Free' : `₹${(Number(listing.price) * qty).toFixed(2)}`}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-
               <div style={{ borderTop: '2px solid #EAEEF2', paddingTop: '14px', marginBottom: '16px' }}>
                 <div className="summary-row" style={{ color: '#16a34a' }}>
                   <span>You Save</span><span>−₹{savingsTotal.toFixed(2)}</span>
@@ -610,12 +640,10 @@ export default function CheckoutPage() {
                   🌱 This order saves {co2Total.toFixed(1)} kg CO₂ — equivalent to planting {(co2Total / 20).toFixed(1)} trees!
                 </div>
               </div>
-
               <button type="submit" disabled={!!payStage} className="checkout-btn"
                 style={{ border: 'none', cursor: payStage ? 'not-allowed' : 'pointer', opacity: payStage ? 0.6 : 1 }}>
                 {payStage ? '⏳ Processing…' : `✔ Confirm & Pay ₹${finalPrice.toFixed(2)}`}
               </button>
-
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '14px', fontSize: '0.72rem', color: '#9AA0A6', fontWeight: 500 }}>
                 🔒 Secure & encrypted checkout
               </div>
