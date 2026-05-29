@@ -75,7 +75,7 @@ const STATUS_CFG = {
   expired:   { label:'Expired', cls:'rd-badge--gray'  },
 };
 
-function FoodCard({ listing }) {
+function FoodCard({ listing, onEdit }) {
   const sc = STATUS_CFG[listing.status] || STATUS_CFG.expired;
   const disc = listing.original_price > 0
     ? Math.round((1 - listing.price / listing.original_price) * 100)
@@ -91,9 +91,37 @@ function FoodCard({ listing }) {
         <span className={`rd-badge ${sc.cls}`}>{sc.label}</span>
       </div>
       <div className="rd-food-card__body">
-        <p className="rd-food-card__name">{listing.title}</p>
-        <p className="rd-food-card__cat">{listing.category}</p>
-        <div className="rd-food-card__footer">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+          <div style={{ flexGrow: 1 }}>
+            <p className="rd-food-card__name">{listing.title}</p>
+            <p className="rd-food-card__cat" style={{ textTransform: 'capitalize' }}>{listing.category}</p>
+          </div>
+          <button 
+            onClick={() => onEdit(listing)}
+            type="button"
+            className="rd-pill" 
+            style={{ 
+              padding: '4px 10px', 
+              fontSize: '0.72rem', 
+              borderRadius: '12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--text-primary)',
+              transition: 'var(--transition-smooth)'
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Edit
+          </button>
+        </div>
+        <div className="rd-food-card__footer" style={{ marginTop: '8px' }}>
           <div>
             <span className="rd-food-card__price">₹{Number(listing.price).toFixed(0)}</span>
             {listing.original_price > 0 &&
@@ -161,6 +189,50 @@ export default function RestaurantPage() {
   const [prepTime, setPrepTime] = useState(getCurrentTimeString());
   const [saving,   setSaving]   = useState(false);
   const [step,     setStep]     = useState(1); // 1 or 2
+  const [editingId, setEditingId] = useState(null);
+  const [status,    setStatus]    = useState('available');
+
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle('');
+    setDesc('');
+    setPrice('');
+    setOrig('');
+    setQty('1');
+    setCat('meals');
+    setImg('');
+    setPrepDate(getTodayDateString());
+    setPrepTime(getCurrentTimeString());
+    setStatus('available');
+    setStep(1);
+  };
+
+  const handleStartEdit = (listing) => {
+    setEditingId(listing._id);
+    setTitle(listing.title || '');
+    setDesc(listing.description || '');
+    setCat(listing.category || 'meals');
+    setPrice(String(listing.price || ''));
+    setOrig(String(listing.original_price || ''));
+    setQty(String(listing.quantity || '1'));
+    setStatus(listing.status || 'available');
+    setImg(listing.image || '');
+    
+    if (listing.preparation_date) {
+      setPrepDate(listing.preparation_date);
+    } else {
+      setPrepDate(getTodayDateString());
+    }
+    
+    if (listing.preparation_time) {
+      setPrepTime(listing.preparation_time);
+    } else {
+      setPrepTime(getCurrentTimeString());
+    }
+    
+    setStep(1);
+    setTab('add');
+  };
 
   /* auth */
   useEffect(()=>{
@@ -202,8 +274,13 @@ export default function RestaurantPage() {
     }
 
     try{
-      const res = await fetch('http://localhost:5000/api/food/upload',{
-        method:'POST', headers:{'Content-Type':'application/json'},
+      const url = editingId 
+        ? `http://localhost:5000/api/food/listings/${editingId}`
+        : 'http://localhost:5000/api/food/upload';
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url,{
+        method, headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           title, description:desc, restaurant_id:user.id,
           price:Number(price)||0, original_price:Number(orig)||0,
@@ -212,16 +289,13 @@ export default function RestaurantPage() {
           preparation_date: prepDate,
           preparation_time: prepTime,
           image: img||undefined,
+          status: editingId ? status : 'available'
         }),
       });
       const data=await res.json();
       if(!res.ok) throw new Error(data.error||'Failed');
-      setToast({msg:'Listing is now live!',type:'success'});
-      setTitle(''); setDesc(''); setPrice(''); setOrig('');
-      setQty('1'); setCat('meals'); setImg(''); 
-      setPrepDate(getTodayDateString());
-      setPrepTime(getCurrentTimeString());
-      setStep(1);
+      setToast({msg: editingId ? 'Listing updated successfully!' : 'Listing is now live!', type:'success'});
+      resetForm();
       load(); setTab('home');
     }catch(e){ setToast({msg:e.message,type:'error'}); }
     finally{ setSaving(false); }
@@ -345,7 +419,7 @@ export default function RestaurantPage() {
               </div>
             ) : (
               <div className="rd-grid">
-                {filtered.map(l=><FoodCard key={l._id} listing={l}/>)}
+                {filtered.map(l=><FoodCard key={l._id} listing={l} onEdit={handleStartEdit}/>)}
               </div>
             )}
           </div>
@@ -357,13 +431,13 @@ export default function RestaurantPage() {
         <div className="dash-card" style={{ maxWidth: '640px', margin: '0 auto' }}>
           {/* Form header */}
           <div className="rd-form-head" style={{ marginBottom: '24px' }}>
-            <button type="button" className="rd-back-btn" onClick={()=>{setTab('home');setStep(1);}}>
+            <button type="button" className="rd-back-btn" onClick={()=>{resetForm(); setTab('home');}}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
               </svg>
             </button>
             <div>
-              <h2 className="card-title">New Listing</h2>
+              <h2 className="card-title">{editingId ? 'Edit Listing' : 'New Listing'}</h2>
               <p className="dash-page-sub" style={{ marginTop: '2px' }}>Step {step} of 2</p>
             </div>
             <div className="rd-steps">
@@ -505,6 +579,24 @@ export default function RestaurantPage() {
                 </div>
                 <p className="rd-field-hint">Helps customers know how fresh the food is.</p>
 
+                {/* Status Selector (only visible when editing) */}
+                {editingId && (
+                  <div style={{ marginTop: '20px' }}>
+                    <label className="rd-label">Listing Status</label>
+                    <select 
+                      className="rd-input" 
+                      value={status} 
+                      onChange={e=>setStatus(e.target.value)}
+                      style={{ outline: 'none' }}
+                    >
+                      <option value="available">Live (Available)</option>
+                      <option value="sold">Sold Out</option>
+                      <option value="expired">Expired (Offline)</option>
+                    </select>
+                    <p className="rd-field-hint">Manage whether this listing is active for customers.</p>
+                  </div>
+                )}
+
                 {/* Summary preview */}
                 {title && (
                   <div className="rd-preview-card">
@@ -530,7 +622,7 @@ export default function RestaurantPage() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
-                        Publish Listing
+                        {editingId ? 'Update Listing' : 'Publish Listing'}
                       </>
                     )}
                   </button>

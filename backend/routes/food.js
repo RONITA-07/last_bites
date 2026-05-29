@@ -151,4 +151,75 @@ router.post('/upload', async (req, res) => {
   }
 });
 
+// PUT Update Listing Route
+router.put('/listings/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { 
+      title, description, price, original_price, 
+      quantity, category, preparation_date, preparation_time,
+      image, status
+    } = req.body;
+
+    const listing = await FoodListing.findById(id);
+    if (!listing) {
+      return res.status(404).json({ error: 'Listing not found' });
+    }
+
+    // Coerce values
+    const safePrice     = isNaN(Number(price))          ? listing.price : Number(price);
+    const safeOrigPrice = isNaN(Number(original_price)) ? listing.original_price : Number(original_price);
+    const safeQuantity  = isNaN(Number(quantity)) || Number(quantity) < 0 ? listing.quantity : Number(quantity);
+
+    // CO2 calculation update
+    const co2_saved = Number((safeQuantity * 2.5).toFixed(1));
+
+    // Handle pickup time calculation if preparation date/time changes
+    let calculatedPickup = listing.pickup_time;
+    const finalPrepDate = preparation_date !== undefined ? preparation_date : listing.preparation_date;
+    const finalPrepTime = preparation_time !== undefined ? preparation_time : listing.preparation_time;
+    if (finalPrepDate && finalPrepTime) {
+      const prepDT = new Date(`${finalPrepDate}T${finalPrepTime}`);
+      if (!isNaN(prepDT.getTime())) {
+        calculatedPickup = new Date(prepDT.getTime() + 6 * 3600000).toISOString();
+      }
+    }
+
+    const updates = {
+      title: title || listing.title,
+      description: description !== undefined ? description : listing.description,
+      price: safePrice,
+      original_price: safeOrigPrice,
+      quantity: safeQuantity,
+      category: category || listing.category,
+      pickup_time: calculatedPickup,
+      co2_saved,
+      status: status || listing.status,
+      preparation_date: finalPrepDate,
+      preparation_time: finalPrepTime
+    };
+
+    if (image !== undefined) {
+      if (image) {
+        const { getUseMock } = require('../db');
+        let itemImage = image;
+        if (getUseMock() && itemImage.startsWith('data:')) {
+          console.log('[food/update] Discarding base64 image for JSON DB — using existing/default instead.');
+        } else {
+          updates.image = itemImage;
+        }
+      } else {
+        updates.image = '';
+      }
+    }
+
+    const updatedListing = await FoodListing.findByIdAndUpdate(id, { $set: updates }, { new: true });
+    res.json(updatedListing);
+  } catch (err) {
+    console.error('Error updating food listing:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
+
