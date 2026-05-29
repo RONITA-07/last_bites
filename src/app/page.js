@@ -147,11 +147,16 @@ function HomeContent() {
 
         {/* ─── Hero ─── */}
         <section className="home-hero">
-          <div className="home-hero__badge">
+          <div className="home-hero__badge"/>
+          {/* Ambient Glow */}
+          <div className="home-hero__glow" />
+          <div className="home-hero__badge animate-fade-in delay-1">
             <span>🌍</span> ELIMINATE FOOD WASTE TOGETHER
           </div>
-
+           
           <h1 className="home-hero__title">
+          <h1 className="home-hero__title animate-fade-in delay-2"></h1>
+          
             Rescue Food.<br />Reduce Waste.
           </h1>
 
@@ -172,9 +177,11 @@ function HomeContent() {
         </section>
 
         {/* ─── Role Cards ─── */}
-        <section className="home-roles">
+          <section className="home-roles">
           {roles.map((role) => (
             <div key={role.id} className="home-role-card" onClick={() => handleRoleCardClick(role.id)}>
+          {roles.map((role, idx) => (
+            <div key={role.id} className={`home-role-card animate-fade-in delay-${idx + 3}`} onClick={() => handleRoleCardClick(role.id)}>
               <div className="home-role-card__icon">{role.icon}</div>
               <h3 className="home-role-card__title">{role.label}</h3>
               <p className="home-role-card__desc">{role.desc}</p>
@@ -183,10 +190,11 @@ function HomeContent() {
               </button>
             </div>
           ))}
-        </section>
+         </section>
 
         {/* ─── Impact Stats ─── */}
         <section className="home-impact">
+        <section className="home-impact animate-fade-in delay-5">
           <h2 className="home-impact__title">Our Shared Impact</h2>
           <div className="home-impact__grid">
             {impactStats.map((s) => (
@@ -203,9 +211,9 @@ function HomeContent() {
             </svg>
           </div>
         </section>
-
         {/* ─── Footer ─── */}
         <footer className="home-footer">
+        <footer className="home-footer animate-fade-in delay-5">
           <div className="home-footer__brand">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6b4f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -221,7 +229,6 @@ function HomeContent() {
           <p className="home-footer__copy">© 2024 Last Bite. Waste less, feed more.</p>
         </footer>
       </main>
-
       {/* ─── Bottom Nav Bar (mobile) ─── */}
       <nav className="home-bottom-nav" aria-label="Bottom navigation">
         <button className="home-bottom-nav__item home-bottom-nav__item--active" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
@@ -249,7 +256,6 @@ function HomeContent() {
           <span>Profile</span>
         </button>
       </nav>
-
       {/* ── Sign-In Modal ── */}
       {showLogin && (
         <div className="modal-overlay" onClick={closeLogin}>
@@ -258,13 +264,11 @@ function HomeContent() {
               <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)' }}>Sign In</h2>
               <button onClick={closeLogin} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-secondary)', lineHeight: 1 }}>×</button>
             </div>
-
             {loginError && (
               <div style={{ background: '#FCE8E6', color: '#C5221F', padding: '12px 14px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '20px' }}>
                 ⚠️ {loginError}
               </div>
             )}
-
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Email Address</label>
@@ -278,7 +282,6 @@ function HomeContent() {
                 {loginLoading ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
-
             <p style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '20px' }}>
               Don&apos;t have an account?{' '}
               <button type="button" onClick={() => router.push('/register')}
@@ -292,7 +295,6 @@ function HomeContent() {
     </>
   );
 }
-
 export default function HomePage() {
   return (
     <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: '100px', color: 'var(--text-secondary)' }}>Loading…</div>}>
