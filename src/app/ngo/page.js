@@ -6,6 +6,7 @@ import CategoryTabs from '@/components/CategoryTabs';
 import FoodCard from '@/components/FoodCard';
 import ImpactWidget from '@/components/ImpactWidget';
 import FloatingCard from '@/components/FloatingCard';
+import { API_BASE_URL } from '@/utils/api';
 
 export default function NGOPage() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function NGOPage() {
     if (!user) return;
     setLoadingDonations(true);
     try {
-      let url = `http://localhost:5000/api/food/listings?lat=${user.location.lat}&lng=${user.location.lng}&type=donation`;
+      let url = `${API_BASE_URL}/api/food/listings?lat=${user.location.lat}&lng=${user.location.lng}&type=donation`;
       if (category !== 'all') {
         url += `&category=${category}`;
       }
@@ -70,7 +71,8 @@ export default function NGOPage() {
     if (!user) return;
     setLoadingClaims(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/order/user/${user.id}`);
+      const userId = user.id || user._id;
+      const res = await fetch(`${API_BASE_URL}/api/order/user/${userId}`);
       if (res.ok) {
         const data = await res.json();
         setClaims(data);
@@ -97,11 +99,11 @@ export default function NGOPage() {
     setToast({ text: '', type: '' });
 
     try {
-      const res = await fetch('http://localhost:5000/api/order/place', {
+      const res = await fetch(`${API_BASE_URL}/api/order/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: user.id,
+          user_id: user.id || user._id,
           food_id: foodId,
           quantity: qty // Claim everything or 1 unit by default
         })
@@ -145,7 +147,7 @@ export default function NGOPage() {
   const handleUpdateClaimStatus = async (orderId, nextStatus) => {
     setUpdateStatusLoadingId(orderId);
     try {
-      const res = await fetch('http://localhost:5000/api/order/update-status', {
+      const res = await fetch(`${API_BASE_URL}/api/order/update-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,7 +214,7 @@ export default function NGOPage() {
           </svg>
           NGO Environmental Impact Metrics
         </h2>
-        <ImpactWidget userId={user.id} refreshTrigger={refreshStats} />
+        <ImpactWidget userId={user.id || user._id} refreshTrigger={refreshStats} />
       </div>
 
       {/* Main Grid: Available Donations and logistics */}

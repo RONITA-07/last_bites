@@ -5,17 +5,21 @@
   "scripts": {
     "dev:frontend": "next dev",
     "dev:backend": "node backend/server.js",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:scanner": "npm run dev --prefix ai_scanner",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:scanner\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/genai": "^2.7.0",
+    "@supabase/supabase-js": "^2.106.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^1.17.0",
     "mongoose": "^9.6.2",
     "next": "16.2.6",
     "razorpay": "^2.9.6",

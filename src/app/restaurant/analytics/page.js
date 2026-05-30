@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/utils/api';
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -68,9 +69,10 @@ export default function RestaurantAnalyticsPage() {
     (async () => {
       setLoading(true);
       try {
+        const restaurantId = user.id || user._id;
         const [o, l] = await Promise.all([
-          fetch(`http://localhost:5000/api/order/restaurant/${user.id}`),
-          fetch(`http://localhost:5000/api/food/listings?restaurant_id=${user.id}`),
+          fetch(`${API_BASE_URL}/api/order/restaurant/${restaurantId}`),
+          fetch(`${API_BASE_URL}/api/food/listings?restaurant_id=${restaurantId}`),
         ]);
         if (o.ok) setOrders(await o.json());
         if (l.ok) setListings(await l.json());

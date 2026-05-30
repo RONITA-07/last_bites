@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/components/CartContext';
+import { RefreshCw, ShieldCheck, Shield } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 // ── Payment Processing Overlay ─────────────────────────────────────────────────
 function PaymentOverlay({ stage }) {
@@ -152,6 +154,15 @@ export default function CheckoutPage() {
   const [payStage, setPayStage] = useState(null);
   const [error, setError] = useState('');
 
+  // Simulated Razorpay sandbox states for surplus order checkout
+  const [showRazorpayMock, setShowRazorpayMock] = useState(false);
+  const [mockOrderId, setMockOrderId] = useState('');
+  const [mockAmount, setMockAmount] = useState(0);
+  const [mockLoading, setMockLoading] = useState(false);
+  const [mockTab, setMockTab] = useState('card'); // 'card' | 'upi' | 'netbanking'
+  const [mockResolve, setMockResolve] = useState(null);
+  const [mockReject, setMockReject] = useState(null);
+
   useEffect(() => {
     const stored = localStorage.getItem('decarb_user');
     if (!stored) { router.push('/?auth=login'); return; }
@@ -164,7 +175,8 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (user) {
-      fetch(`http://localhost:5000/api/auth/wallet/${user.id}`)
+      const userId = user.id || user._id;
+      fetch(`${API_BASE_URL}/api/auth/wallet/${userId}`)
         .then(r => r.json())
         .then(data => {
           if (data.walletBalance !== undefined) {
@@ -173,7 +185,7 @@ export default function CheckoutPage() {
         })
         .catch(err => console.error('Error fetching wallet balance:', err));
 
-      fetch(`http://localhost:5000/api/auth/coins/${user.id}`)
+      fetch(`${API_BASE_URL}/api/auth/coins/${userId}`)
         .then(r => r.json())
         .then(data => {
           if (data.coinsBalance !== undefined) {
@@ -197,9 +209,42 @@ export default function CheckoutPage() {
   const coinsDiscount = useCoins ? Math.min(coinsBalance / 100, totalPrice) : 0;
   const finalPrice = Math.max(0, Number((totalPrice - coinsDiscount).toFixed(2)));
 
+  const handleMockCheckoutSuccess = async () => {
+    setMockLoading(true);
+    try {
+      const verifyRes = await fetch(`${API_BASE_URL}/api/payment/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpay_order_id: mockOrderId,
+          razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 11)}`
+        })
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok || !verifyData.verified) {
+        throw new Error(verifyData.error || 'Verification failed');
+      }
+      setShowRazorpayMock(false);
+      if (mockResolve) mockResolve();
+    } catch (err) {
+      setError(err.message);
+      setShowRazorpayMock(false);
+      if (mockReject) mockReject(err);
+    } finally {
+      setMockLoading(false);
+    }
+  };
+
+  const handleMockCheckoutDismiss = () => {
+    setError('Payment window cancelled by user.');
+    setShowRazorpayMock(false);
+    if (mockReject) mockReject(new Error('Payment window cancelled.'));
+  };
+
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setError('');
+    const userId = user.id || user._id;
     if (method === 'upi' && !upiId.trim()) { setError('Please enter your UPI ID.'); return; }
     if (method === 'card' && (!cardNo.trim() || !expiry.trim() || !cvv.trim())) { setError('Please fill all card details.'); return; }
     if (method === 'wallet' && walletBalance < finalPrice) {
@@ -218,10 +263,10 @@ export default function CheckoutPage() {
       if (useCoins && coinsBalance > 0) {
         const coinsToRedeem = Math.min(coinsBalance, Math.round(coinsDiscount * 100));
         if (coinsToRedeem > 0) {
-          const redeemRes = await fetch('http://localhost:5000/api/auth/coins/redeem', {
+          const redeemRes = await fetch(`${API_BASE_URL}/api/auth/coins/redeem`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id, coinsToRedeem }),
+            body: JSON.stringify({ userId, coinsToRedeem }),
           });
           const redeemData = await redeemRes.json();
           if (!redeemRes.ok) throw new Error(redeemData.error || 'Failed to redeem coins');
@@ -234,10 +279,10 @@ export default function CheckoutPage() {
 
       // 2. Perform Payment
       if (method === 'wallet') {
-        const payRes = await fetch('http://localhost:5000/api/auth/wallet/pay', {
+        const payRes = await fetch(`${API_BASE_URL}/api/auth/wallet/pay`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id, amount: finalPrice }),
+          body: JSON.stringify({ userId, amount: finalPrice }),
         });
         const payData = await payRes.json();
         if (!payRes.ok) throw new Error(payData.error || 'Wallet payment failed');
@@ -245,7 +290,7 @@ export default function CheckoutPage() {
       }
       else if (method === 'razorpay') {
         // Create payment order
-        const orderRes = await fetch('http://localhost:5000/api/payment/order', {
+        const orderRes = await fetch(`${API_BASE_URL}/api/payment/order`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount: finalPrice }),
@@ -264,7 +309,7 @@ export default function CheckoutPage() {
               order_id: orderData.id,
               handler: async function (response) {
                 try {
-                  const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+                  const verifyRes = await fetch(`${API_BASE_URL}/api/payment/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -301,32 +346,16 @@ export default function CheckoutPage() {
 
           await razorpayPromise;
         } else {
-          // Fallback: Simulated Test Payment
+          // Fallback: Simulated Test Payment Sandbox Modal
           console.log('[Razorpay] Simulated payment mode active for checkout.');
-          setError('Launching Simulated Test Payment... (No real keys configured)');
+          setMockOrderId(orderData.id);
+          setMockAmount(finalPrice);
+          setShowRazorpayMock(true);
 
           await new Promise((resolve, reject) => {
-            setTimeout(async () => {
-              try {
-                const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    razorpay_order_id: orderData.id,
-                    razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 11)}`
-                  })
-                });
-                const verifyData = await verifyRes.json();
-                if (!verifyRes.ok || !verifyData.verified) {
-                  throw new Error(verifyData.error || 'Verification failed');
-                }
-                resolve();
-              } catch (err) {
-                reject(err);
-              }
-            }, 2000);
+            setMockResolve(() => resolve);
+            setMockReject(() => reject);
           });
-          setError('');
         }
       }
 
@@ -352,11 +381,11 @@ export default function CheckoutPage() {
                 remainingDiscount = 0;
               }
             }
-            return fetch('http://localhost:5000/api/order/place', {
+            return fetch(`${API_BASE_URL}/api/order/place`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                user_id: user.id,
+                user_id: userId,
                 food_id: listing._id,
                 quantity: qty,
                 discount: Number(itemDiscount.toFixed(2))
@@ -372,7 +401,7 @@ export default function CheckoutPage() {
 
       // Fetch latest coins balance from backend (since placing orders credits new coins)
       try {
-        const coinFetch = await fetch(`http://localhost:5000/api/auth/coins/${user.id}`);
+        const coinFetch = await fetch(`${API_BASE_URL}/api/auth/coins/${userId}`);
         const coinData = await coinFetch.json();
         if (coinData && coinData.coinsBalance !== undefined) {
           const finalUser = { ...updatedUser, coinsBalance: coinData.coinsBalance };
@@ -713,6 +742,191 @@ export default function CheckoutPage() {
           </div>
         </form>
       </main>
+
+      {/* ── Simulated Razorpay Sandbox Modal Overlay ── */}
+      {showRazorpayMock && (
+        <div className="modal-overlay" style={{ zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="modal-card animate-fade-in" style={{
+            maxWidth: '440px',
+            width: '92%',
+            padding: '24px',
+            borderRadius: '24px',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-hover)'
+          }}>
+            {/* Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #10b981, #047857)',
+              color: '#ffffff',
+              padding: '16px 20px',
+              borderRadius: '16px 16px 0 0',
+              margin: '-24px -24px 20px -24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', background: 'rgba(255,255,255,0.2)', padding: '2px 6px', borderRadius: '4px' }}>
+                  RAZORPAY TEST API SANDBOX
+                </span>
+                <h4 style={{ fontSize: '0.98rem', fontWeight: 800, marginTop: '4px', color: '#ffffff' }}>Last Bite Payment Gateway</h4>
+              </div>
+              <button
+                onClick={handleMockCheckoutDismiss}
+                style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '1.4rem', cursor: 'pointer' }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Amount details */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Amount to Charge</span>
+              <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+                ₹{mockAmount.toFixed(2)}
+              </h2>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                Order ID: {mockOrderId}
+              </span>
+            </div>
+
+            {/* Selector Tabs */}
+            <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-alt)', padding: '4px', borderRadius: '10px', marginBottom: '16px' }}>
+              {['card', 'upi', 'netbanking'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setMockTab(tab)}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    background: mockTab === tab ? 'var(--primary)' : 'transparent',
+                    color: mockTab === tab ? '#ffffff' : 'var(--text-secondary)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            <div style={{ minHeight: '130px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
+              {mockTab === 'card' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
+                  <div>
+                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Card Number</label>
+                    <input type="text" placeholder="4111 1111 1111 1111" className="form-input" style={{ height: '36px', fontSize: '0.82rem', marginTop: '3px' }} disabled />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Expiry</label>
+                      <input type="text" placeholder="12/29" className="form-input" style={{ height: '36px', fontSize: '0.82rem', marginTop: '3px' }} disabled />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>CVV</label>
+                      <input type="password" placeholder="***" className="form-input" style={{ height: '36px', fontSize: '0.82rem', marginTop: '3px' }} disabled />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {mockTab === 'upi' && (
+                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 8px' }}>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <rect x="7" y="7" width="3" height="3" />
+                    <rect x="14" y="7" width="3" height="3" />
+                    <rect x="7" y="14" width="3" height="3" />
+                    <rect x="14" y="14" width="3" height="3" />
+                  </svg>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>Scan simulated dynamic QR Code</p>
+                  <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Use any sandbox UPI app to trigger response.</p>
+                </div>
+              )}
+
+              {mockTab === 'netbanking' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Select Test Bank</label>
+                  <select className="form-input" style={{ height: '38px', fontSize: '0.82rem', padding: '0 10px', marginTop: '3px' }} disabled>
+                    <option>State Bank of India (SBI)</option>
+                    <option>HDFC Bank Sandbox</option>
+                    <option>ICICI Bank Sandbox</option>
+                    <option>Axis Bank Sandbox</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={handleMockCheckoutSuccess}
+                disabled={mockLoading}
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  textTransform: 'uppercase',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: mockLoading ? 'default' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+                  opacity: mockLoading ? 0.7 : 1
+                }}
+              >
+                {mockLoading ? (
+                  <>
+                    <RefreshCw size={14} className="ra2-spinner" style={{ animation: 'spin 1s linear infinite' }} />
+                    Verifying Sandbox...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={15} /> Simulate Payment Success
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleMockCheckoutDismiss}
+                disabled={mockLoading}
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  cursor: mockLoading ? 'default' : 'pointer'
+                }}
+              >
+                Cancel Sandbox Payment
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginTop: '14px', color: 'var(--text-secondary)', fontSize: '0.62rem', fontWeight: 600 }}>
+              <Shield size={12} style={{ color: '#10b981' }} /> Secure Sandbox Protected by Razorpay simulator
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

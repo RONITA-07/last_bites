@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import RestaurantSidebar from '@/components/RestaurantSidebar';
+import { API_BASE_URL } from '@/utils/api';
 
 // ═══════════════════════════════════════════════════════════
 //  CONFIG
@@ -157,9 +158,10 @@ export default function OperationsPage() {
     if (!user) return;
     setLoading(true);
     try {
+      const restaurantId = user.id || user._id;
       const [lRes, oRes] = await Promise.all([
-        fetch(`http://localhost:5000/api/food/listings?restaurant_id=${user.id}`),
-        fetch(`http://localhost:5000/api/order/restaurant/${user.id}`),
+        fetch(`${API_BASE_URL}/api/food/listings?restaurant_id=${restaurantId}`),
+        fetch(`${API_BASE_URL}/api/order/restaurant/${restaurantId}`),
       ]);
       if (lRes.ok) setListings(await lRes.json());
       if (oRes.ok) setOrders(await oRes.json());
@@ -173,7 +175,7 @@ export default function OperationsPage() {
   const updateStatus = async (orderId, newStatus) => {
     setUpdatingId(orderId);
     try {
-      const res = await fetch('http://localhost:5000/api/order/update-status', {
+      const res = await fetch(`${API_BASE_URL}/api/order/update-status`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order_id: orderId, status: newStatus }),
       });

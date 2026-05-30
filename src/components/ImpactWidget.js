@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import FloatingCard from './FloatingCard';
+import { API_BASE_URL } from '@/utils/api';
 
 export default function ImpactWidget({ userId, restaurantId, refreshTrigger }) {
   const [stats, setStats] = useState({ mealsRescued: 0, co2Saved: 0, revenueRecovered: 0 });
@@ -9,7 +10,7 @@ export default function ImpactWidget({ userId, restaurantId, refreshTrigger }) {
   useEffect(() => {
     async function fetchStats() {
       try {
-        let url = 'http://localhost:5000/api/analytics/stats';
+        let url = `${API_BASE_URL}/api/analytics/stats`;
         const params = [];
         if (userId) params.push(`user_id=${userId}`);
         if (restaurantId) params.push(`restaurant_id=${restaurantId}`);

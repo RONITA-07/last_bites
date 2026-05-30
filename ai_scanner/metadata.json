@@ -1,0 +1,6 @@
+{
+  "name": "Food Freshness & Nutrition Analytics",
+  "description": "Analyze your meals and food ingredients to evaluate freshness, safety, shelf-life, and dynamic macronutrient breakdown using the Gemini API.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

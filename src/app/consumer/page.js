@@ -7,6 +7,7 @@ import CategoryTabs from '@/components/CategoryTabs';
 import FoodCard from '@/components/FoodCard';
 import ImpactWidget from '@/components/ImpactWidget';
 import { useCart } from '@/components/CartContext';
+import { API_BASE_URL } from '@/utils/api';
 
 export default function ConsumerPage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function ConsumerPage() {
     async function fetchListings() {
       setLoading(true);
       try {
-        let url = `http://localhost:5000/api/food/listings?lat=${user.location.lat}&lng=${user.location.lng}&type=paid`;
+        let url = `${API_BASE_URL}/api/food/listings?lat=${user.location.lat}&lng=${user.location.lng}&type=paid`;
         if (category !== 'all') url += `&category=${category}`;
         if (search)             url += `&search=${encodeURIComponent(search)}`;
         const res = await fetch(url);
@@ -79,7 +80,7 @@ export default function ConsumerPage() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.8a7 7 0 0 1-7 8.2z"/><path d="M9 22v-4h4"/></svg>
           Your Personal Impact
         </h2>
-        <ImpactWidget userId={user.id} refreshTrigger={refreshStats} />
+        <ImpactWidget userId={user.id || user._id} refreshTrigger={refreshStats} />
       </div>
 
       {/* ── Filters ── */}

@@ -35,7 +35,11 @@ const UserSchema = {
   walletBalance: { type: Number, default: 0 },
 
   // Coins Reward
-  coinsBalance: { type: Number, default: 0 }
+  coinsBalance: { type: Number, default: 0 },
+
+  // Verification & Legend
+  isVerified: { type: Boolean, default: false },
+  isLegend: { type: Boolean, default: false }
 };
 
 module.exports = new DynamicModel('User', UserSchema, 'users');

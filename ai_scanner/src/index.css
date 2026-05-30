@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* Dark theme variables by default */
+  --bg-app: #0a0a0b;
+  --bg-header: #0e0e10;
+  --bg-card: #151518;
+  --bg-card-sub: #1e1e22;
+  --bg-hud: #1d1d21;
+  --text-main: #cbd5e1; /* slate-300 */
+  --text-title: #ffffff; /* white */
+  --text-muted: #94a3b8; /* slate-400 */
+  --text-dark: #64748b; /* slate-500 */
+  --border-main: rgba(255, 255, 255, 0.1);
+  --border-sub: rgba(255, 255, 255, 0.05);
+  --primary-theme: #34d399; /* emerald-400 */
+  --primary-theme-hover: #10b981; /* emerald-500 */
+}
+
+/* Light theme overrides */
+.light-theme {
+  --bg-app: #f8fafc; /* slate-50 */
+  --bg-header: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-sub: #f1f5f9; /* slate-100 */
+  --bg-hud: #e2e8f0; /* slate-200 */
+  --text-main: #334155; /* slate-700 */
+  --text-title: #0f172a; /* slate-900 */
+  --text-muted: #475569; /* slate-600 */
+  --text-dark: #64748b; /* slate-550 / slate-500 */
+  --border-main: rgba(0, 0, 0, 0.08);
+  --border-sub: rgba(0, 0, 0, 0.04);
+  --primary-theme: #059669; /* emerald-600 */
+  --primary-theme-hover: #047857; /* emerald-700 */
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Custom theme colors mapping to CSS variables */
+  --color-bg-app: var(--bg-app);
+  --color-bg-header: var(--bg-header);
+  --color-bg-card: var(--bg-card);
+  --color-bg-card-sub: var(--bg-card-sub);
+  --color-bg-hud: var(--bg-hud);
+  --color-text-main: var(--text-main);
+  --color-text-title: var(--text-title);
+  --color-text-muted: var(--text-muted);
+  --color-text-dark: var(--text-dark);
+  --color-border-main: var(--border-main);
+  --color-border-sub: var(--border-sub);
+  --color-primary-theme: var(--primary-theme);
+  --color-primary-theme-hover: var(--primary-theme-hover);
+}
+
+/* Custom styles for radial freshness gauge */
+.radial-progress-underlay {
+  stroke: var(--border-main);
+}
+
+.radial-progress-bar {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease-in-out;
+}

@@ -218,4 +218,25 @@ router.post('/coins/redeem', async (req, res) => {
   }
 });
 
+// POST Add Coins (e.g. from watching Ads)
+router.post('/coins/add', async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+    if (!userId || isNaN(Number(amount)) || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Invalid userId or amount' });
+    }
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const currentCoins = Number(user.coinsBalance || 0);
+    const addedCoins = Math.floor(Number(amount));
+    const newCoins = currentCoins + addedCoins;
+    
+    await User.findByIdAndUpdate(userId, { $set: { coinsBalance: newCoins } });
+    res.json({ coinsBalance: newCoins });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

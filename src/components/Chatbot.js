@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '@/utils/api';
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,88 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [user, setUser] = useState(null);
   const chatEndRef = useRef(null);
+
+  // Draggable physics states
+  const [position, setPosition] = useState({ x: null, y: null });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ startX: 0, startY: 0, startPosX: 0, startPosY: 0, hasMoved: false });
+
+  // Initialize position on bottom right after mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const initialX = window.innerWidth - 75 - 20; // 75px avatar width, 20px padding
+      const initialY = window.innerHeight - 75 - 40; // 75px avatar height, 40px padding
+      setPosition({ x: initialX, y: initialY });
+    }
+  }, []);
+
+  // Handle window resizing
+  useEffect(() => {
+    const handleResize = () => {
+      setPosition(prev => {
+        if (prev.x === null) return prev;
+        const nearestX = prev.x + 37.5 < window.innerWidth / 2 ? 20 : window.innerWidth - 75 - 20;
+        const nearestY = Math.max(20, Math.min(window.innerHeight - 75 - 40, prev.y));
+        return { x: nearestX, y: nearestY };
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handlePointerDown = (e) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDragging(true);
+    dragStart.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startPosX: position.x !== null ? position.x : window.innerWidth - 75 - 20,
+      startPosY: position.y !== null ? position.y : window.innerHeight - 75 - 40,
+      hasMoved: false
+    };
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - dragStart.current.startX;
+    const deltaY = e.clientY - dragStart.current.startY;
+    
+    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+      dragStart.current.hasMoved = true;
+    }
+
+    const newX = dragStart.current.startPosX + deltaX;
+    const newY = dragStart.current.startPosY + deltaY;
+
+    // Bounded coordinates (keep the 75px avatar inside the screen, adding 20px padding)
+    const boundedX = Math.max(20, Math.min(window.innerWidth - 75 - 20, newX));
+    const boundedY = Math.max(20, Math.min(window.innerHeight - 75 - 40, newY));
+
+    setPosition({ x: boundedX, y: boundedY });
+  };
+
+  const handlePointerUp = (e) => {
+    if (!isDragging) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setIsDragging(false);
+
+    // Snap to left or right border with 20px padding
+    const halfway = window.innerWidth / 2;
+    const isLeft = position.x + 37.5 < halfway;
+    const targetX = isLeft ? 20 : window.innerWidth - 75 - 20;
+    const targetY = Math.max(20, Math.min(window.innerHeight - 75 - 40, position.y));
+
+    setPosition({ x: targetX, y: targetY });
+  };
+
+  const handleAvatarClick = (e) => {
+    if (dragStart.current.hasMoved) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    setIsOpen(true);
+  };
 
   // Sync user state from localStorage
   useEffect(() => {
@@ -50,7 +133,7 @@ export default function Chatbot() {
     setIsTyping(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/ai', {
+      const res = await fetch(`${API_BASE_URL}/api/ai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -90,55 +173,92 @@ export default function Chatbot() {
   };
 
   if (!isOpen) {
+    const isLeft = position.x !== null && position.x + 37.5 < window.innerWidth / 2;
+    const isSnapped = !isDragging && position.x !== null && (position.x === 20 || position.x === window.innerWidth - 75 - 20);
+
+    let bubbleStyle = {
+      backgroundColor: '#ffffff',
+      border: '1px solid #e2e8f0',
+      borderRadius: '20px',
+      padding: '12px 20px',
+      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.08)',
+      position: 'absolute',
+      bottom: '85px',
+      zIndex: 1,
+      color: '#1e293b',
+      fontFamily: "'Outfit', sans-serif",
+      fontSize: '15px',
+      fontWeight: '600',
+      whiteSpace: 'nowrap',
+      lineHeight: '1.2',
+      pointerEvents: 'none',
+      transition: 'all 0.2s ease-in-out'
+    };
+
+    let tailStyle = {
+      position: 'absolute',
+      bottom: '-6px',
+      width: '12px',
+      height: '12px',
+      backgroundColor: '#ffffff',
+      borderRight: '1px solid #e2e8f0',
+      borderBottom: '1px solid #e2e8f0',
+      zIndex: 2
+    };
+
+    if (isSnapped) {
+      if (isLeft) {
+        bubbleStyle.left = '0px';
+        bubbleStyle.right = 'auto';
+        bubbleStyle.transform = 'none';
+
+        tailStyle.left = '31px';
+        tailStyle.transform = 'rotate(45deg)';
+      } else {
+        bubbleStyle.right = '0px';
+        bubbleStyle.left = 'auto';
+        bubbleStyle.transform = 'none';
+
+        tailStyle.right = '31px';
+        tailStyle.transform = 'rotate(45deg)';
+      }
+    } else {
+      bubbleStyle.left = '50%';
+      bubbleStyle.right = 'auto';
+      bubbleStyle.transform = 'translateX(-50%)';
+
+      tailStyle.left = '50%';
+      tailStyle.transform = 'translateX(-50%) rotate(45deg)';
+    }
+
     return (
       <div 
-        onClick={() => setIsOpen(true)}
+        onClick={handleAvatarClick}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
         style={{
           position: 'fixed',
-          bottom: '20px',
-          right: '20px',
           zIndex: 1000,
-          cursor: 'pointer',
+          cursor: isDragging ? 'grabbing' : 'grab',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           userSelect: 'none',
-          transition: 'transform 0.2s ease-in-out',
+          touchAction: 'none', // Critical to prevent screen scrolling while dragging on touch screens!
+          transition: isDragging ? 'none' : 'left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.2s ease-in-out',
+          width: '75px', // Predictable fixed width to prevent text width expansion!
+          ...(position.x === null
+            ? { bottom: '20px', right: '20px' }
+            : { left: `${position.x}px`, top: `${position.y}px` }
+          )
         }}
       >
         {/* Speech Bubble (coming out of the head of the bot) */}
-        <div 
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '20px',
-            padding: '12px 20px',
-            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.08)',
-            position: 'relative',
-            zIndex: 1,
-            color: '#1e293b',
-            fontFamily: "'Outfit', sans-serif",
-            fontSize: '15px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap',
-            lineHeight: '1.2',
-            marginBottom: '12px'
-          }}
-        >
+        <div style={bubbleStyle}>
           Hi! How can I help you today?
           {/* Rotated square speech bubble tail pointing down to the bot's head */}
-          <div style={{
-            position: 'absolute',
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%) rotate(45deg)',
-            width: '12px',
-            height: '12px',
-            backgroundColor: '#ffffff',
-            borderRight: '1px solid #e2e8f0',
-            borderBottom: '1px solid #e2e8f0',
-            zIndex: 2
-          }} />
+          <div style={tailStyle} />
         </div>
 
         {/* Robot Avatar (No white background, cropped to body, stands still) */}
@@ -146,18 +266,22 @@ export default function Chatbot() {
         <img 
           src="/bot_profile_transparent.png" 
           alt="LastBitesBot Avatar" 
+          draggable="false" // Prevent native HTML dragging conflicts
           style={{
             width: '75px',
             height: 'auto',
             objectFit: 'contain',
             zIndex: 3,
             filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.15))',
-            transition: 'transform 0.2s ease'
+            transition: 'transform 0.2s ease',
+            pointerEvents: 'none' // Prevent image-specific dragging issues
           }}
         />
       </div>
     );
   }
+
+  const isLeft = position.x !== null && position.x + 40 < window.innerWidth / 2;
 
   return (
     <div 
@@ -165,7 +289,8 @@ export default function Chatbot() {
       style={{
         position: 'fixed',
         bottom: '20px',
-        right: '20px',
+        left: isLeft ? '20px' : 'auto',
+        right: isLeft ? 'auto' : '20px',
         width: '380px',
         height: '520px',
         zIndex: 1000,

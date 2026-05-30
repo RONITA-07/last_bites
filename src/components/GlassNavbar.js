@@ -2,10 +2,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { RefreshCw, ShieldCheck, Shield } from 'lucide-react';
+import { API_BASE_URL } from '@/utils/api';
 
 export default function GlassNavbar() {
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState('light');
+  const [isPremium, setIsPremium] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -21,19 +24,37 @@ export default function GlassNavbar() {
   const [coinsBalance, setCoinsBalance] = useState(0);
   const [coinsLoading, setCoinsLoading] = useState(false);
 
+  // Ads system states
+  const [showAdsModal, setShowAdsModal] = useState(false);
+  const [adList, setAdList] = useState([]);
+  const [currentAd, setCurrentAd] = useState(null);
+  const [countdown, setCountdown] = useState(5);
+  const [adStatus, setAdStatus] = useState('not_started'); // 'not_started' | 'watching' | 'completed'
+  const [adCoinsValue, setAdCoinsValue] = useState(15);
+  const [adLoading, setAdLoading] = useState(false);
+
   const [topupAmount, setTopupAmount] = useState('');
   const [topupLoading, setTopupLoading] = useState(false);
   const [topupSuccess, setTopupSuccess] = useState(false);
   const [topupError, setTopupError] = useState('');
+
+  // Simulated Razorpay sandbox states
+  const [showRazorpayMock, setShowRazorpayMock] = useState(false);
+  const [mockOrderId, setMockOrderId] = useState('');
+  const [mockAmount, setMockAmount] = useState(0);
+  const [mockLoading, setMockLoading] = useState(false);
+  const [mockTab, setMockTab] = useState('card'); // 'card' | 'upi' | 'netbanking'
 
   const openCustomerModal = () => {
     if (!user) return;
     setShowCustomerModal(true);
     setActiveTab('impact');
 
+    const userId = user.id || user._id;
+
     // Fetch wallet balance
     setWalletLoading(true);
-    fetch(`http://localhost:5000/api/auth/wallet/${user.id}`)
+    fetch(`${API_BASE_URL}/api/auth/wallet/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data.walletBalance !== undefined) {
@@ -42,6 +63,8 @@ export default function GlassNavbar() {
           const u = stored ? JSON.parse(stored) : user;
           const updated = { ...u, walletBalance: data.walletBalance };
           localStorage.setItem('decarb_user', JSON.stringify(updated));
+          setUser(updated);
+          window.dispatchEvent(new Event('auth-change'));
         }
       })
       .catch(err => console.error('Error fetching wallet:', err))
@@ -49,7 +72,7 @@ export default function GlassNavbar() {
 
     // Fetch coins balance
     setCoinsLoading(true);
-    fetch(`http://localhost:5000/api/auth/coins/${user.id}`)
+    fetch(`${API_BASE_URL}/api/auth/coins/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data.coinsBalance !== undefined) {
@@ -58,6 +81,8 @@ export default function GlassNavbar() {
           const u = stored ? JSON.parse(stored) : user;
           const updated = { ...u, coinsBalance: data.coinsBalance };
           localStorage.setItem('decarb_user', JSON.stringify(updated));
+          setUser(updated);
+          window.dispatchEvent(new Event('auth-change'));
         }
       })
       .catch(err => console.error('Error fetching coins:', err))
@@ -65,7 +90,7 @@ export default function GlassNavbar() {
 
     // Fetch personal impact stats
     setImpactLoading(true);
-    fetch(`http://localhost:5000/api/analytics/stats?user_id=${user.id}`)
+    fetch(`${API_BASE_URL}/api/analytics/stats?user_id=${userId}`)
       .then(res => res.json())
       .then(data => {
         setImpactStats(data);
@@ -75,7 +100,7 @@ export default function GlassNavbar() {
 
     // Fetch past orders
     setOrdersLoading(true);
-    fetch(`http://localhost:5000/api/order/user/${user.id}`)
+    fetch(`${API_BASE_URL}/api/order/user/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -101,7 +126,7 @@ export default function GlassNavbar() {
     setTopupLoading(true);
     try {
       // 1. Create Order on Backend
-      const orderRes = await fetch('http://localhost:5000/api/payment/order', {
+      const orderRes = await fetch(`${API_BASE_URL}/api/payment/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount, currency: 'INR' }),
@@ -121,7 +146,7 @@ export default function GlassNavbar() {
           handler: async function (response) {
             try {
               // Verify signature
-              const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+              const verifyRes = await fetch(`${API_BASE_URL}/api/payment/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -136,10 +161,10 @@ export default function GlassNavbar() {
               }
 
               // Update balance
-              const topupRes = await fetch('http://localhost:5000/api/auth/wallet/topup', {
+              const topupRes = await fetch(`${API_BASE_URL}/api/auth/wallet/topup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, amount }),
+                body: JSON.stringify({ userId: user.id || user._id, amount }),
               });
               const topupData = await topupRes.json();
               if (!topupRes.ok) throw new Error(topupData.error || 'Top-up failed');
@@ -174,51 +199,11 @@ export default function GlassNavbar() {
         const rzp = new window.Razorpay(options);
         rzp.open();
       } else {
-        // Fallback: Simulated Test Payment (No keys configured, or keys are mock)
+        // Fallback: Launch Simulated Test Payment Sandbox Modal
         console.log('[Razorpay] Simulated payment mode active.');
-        setTopupError('Launching Simulated Test Payment... (No real keys configured)');
-
-        setTimeout(async () => {
-          try {
-            setTopupError('');
-
-            // Call verify with mock order ID
-            const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: orderData.id,
-                razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 11)}`
-              })
-            });
-            const verifyData = await verifyRes.json();
-            if (!verifyRes.ok || !verifyData.verified) {
-              throw new Error(verifyData.error || 'Verification failed');
-            }
-
-            // Update balance
-            const topupRes = await fetch('http://localhost:5000/api/auth/wallet/topup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: user.id, amount }),
-            });
-            const topupData = await topupRes.json();
-            if (!topupRes.ok) throw new Error(topupData.error || 'Top-up failed');
-
-            setWalletBalance(topupData.walletBalance);
-            const updatedUser = { ...user, walletBalance: topupData.walletBalance };
-            localStorage.setItem('decarb_user', JSON.stringify(updatedUser));
-            window.dispatchEvent(new Event('auth-change'));
-
-            setTopupAmount('');
-            setTopupSuccess(true);
-            setTimeout(() => setTopupSuccess(false), 3000);
-          } catch (err) {
-            setTopupError(err.message);
-          } finally {
-            setTopupLoading(false);
-          }
-        }, 2000);
+        setMockOrderId(orderData.id);
+        setMockAmount(amount);
+        setShowRazorpayMock(true);
       }
     } catch (err) {
       setTopupError(err.message);
@@ -226,10 +211,64 @@ export default function GlassNavbar() {
     }
   };
 
+  const handleMockTopupSuccess = async () => {
+    setMockLoading(true);
+    try {
+      // Call verify with mock order ID
+      const verifyRes = await fetch(`${API_BASE_URL}/api/payment/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpay_order_id: mockOrderId,
+          razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 11)}`
+        })
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok || !verifyData.verified) {
+        throw new Error(verifyData.error || 'Verification failed');
+      }
+
+      // Update balance
+      const topupRes = await fetch(`${API_BASE_URL}/api/auth/wallet/topup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id || user._id, amount: mockAmount }),
+      });
+      const topupData = await topupRes.json();
+      if (!topupRes.ok) throw new Error(topupData.error || 'Top-up failed');
+
+      setWalletBalance(topupData.walletBalance);
+      const updatedUser = { ...user, walletBalance: topupData.walletBalance };
+      localStorage.setItem('decarb_user', JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event('auth-change'));
+
+      setTopupAmount('');
+      setTopupSuccess(true);
+      setShowRazorpayMock(false);
+      setTimeout(() => setTopupSuccess(false), 3000);
+    } catch (err) {
+      setTopupError(err.message);
+      setShowRazorpayMock(false);
+    } finally {
+      setMockLoading(false);
+      setTopupLoading(false);
+    }
+  };
+
+  const handleMockTopupDismiss = () => {
+    setTopupError('Payment window cancelled by user.');
+    setShowRazorpayMock(false);
+    setTopupLoading(false);
+  };
+
   useEffect(() => {
     // Read the actual theme attribute from documentElement on mount
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     setTheme(currentTheme);
+
+    // Read initial premium state
+    const storedPremium = localStorage.getItem('decarb_premium') === 'true';
+    setIsPremium(storedPremium);
 
     // Check local storage for user info on boot
     const storedUser = localStorage.getItem('decarb_user');
@@ -238,6 +277,16 @@ export default function GlassNavbar() {
       setUser(u);
       if (u.coinsBalance !== undefined) setCoinsBalance(u.coinsBalance);
     }
+
+    // Listen for cross-origin messages from the scanner iframe
+    const handleMessage = (event) => {
+      if (event.data && event.data.type === 'PREMIUM_STATUS') {
+        const premiumVal = event.data.isPremium;
+        setIsPremium(premiumVal);
+        localStorage.setItem('decarb_premium', premiumVal ? 'true' : 'false');
+      }
+    };
+    window.addEventListener('message', handleMessage);
 
     // Listen for custom authentication changes (e.g. login/register/logout)
     const handleAuthChange = () => {
@@ -253,7 +302,10 @@ export default function GlassNavbar() {
     };
 
     window.addEventListener('auth-change', handleAuthChange);
-    return () => window.removeEventListener('auth-change', handleAuthChange);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('auth-change', handleAuthChange);
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -261,6 +313,110 @@ export default function GlassNavbar() {
     setTheme(nextTheme);
     document.documentElement.setAttribute('data-theme', nextTheme);
     localStorage.setItem('decarb_theme', nextTheme);
+
+    // Broadcast theme update to any scanner iframe on the page
+    const iframe = document.querySelector('iframe[title="LastBite AI Scanner"]');
+    if (iframe) {
+      iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: nextTheme }, '*');
+    }
+  };
+
+  const handleScannerClick = () => {
+    if (pathname === '/consumer/scanner') {
+      router.push('/consumer');
+    } else {
+      router.push('/consumer/scanner');
+    }
+  };
+
+  const handlePremiumClick = () => {
+    if (pathname === '/consumer/scanner') {
+      window.dispatchEvent(new Event('open-premium-modal'));
+    } else {
+      router.push('/consumer/scanner?premium=true');
+    }
+  };
+
+  const handleAdsClick = async () => {
+    setAdLoading(true);
+    setAdStatus('not_started');
+    setShowAdsModal(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        setAdCoinsValue(data.adCoinsValue || 15);
+        if (data.activeAds && data.activeAds.length > 0) {
+          setAdList(data.activeAds);
+          const randomAd = data.activeAds[Math.floor(Math.random() * data.activeAds.length)];
+          setCurrentAd(randomAd);
+          setCountdown(randomAd.duration || 5);
+        }
+      } else {
+        throw new Error('Failed to fetch settings');
+      }
+    } catch (e) {
+      setAdCoinsValue(15);
+      const defaultAd = {
+        title: 'EcoBite Organic Surplus Box',
+        company: 'EcoBite Groceries',
+        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-fruits-and-vegetables-in-a-market-stall-42284-large.mp4',
+        duration: 5,
+        description: 'Save 70% on premium organic surpluses! Watch to earn reward coins.'
+      };
+      setCurrentAd(defaultAd);
+      setCountdown(5);
+    } finally {
+      setAdLoading(false);
+    }
+  };
+
+  const startWatchingAd = () => {
+    setAdStatus('watching');
+    setCountdown(currentAd ? currentAd.duration : 5);
+  };
+
+  useEffect(() => {
+    let timer;
+    if (adStatus === 'watching' && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    } else if (adStatus === 'watching' && countdown === 0) {
+      awardAdCoins();
+    }
+    return () => clearTimeout(timer);
+  }, [adStatus, countdown]);
+
+  const awardAdCoins = async () => {
+    setAdStatus('completed');
+    if (!user) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/coins/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id || user._id,
+          amount: adCoinsValue
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCoinsBalance(data.coinsBalance);
+        
+        // Update user state and local storage
+        const storedUser = localStorage.getItem('decarb_user');
+        if (storedUser) {
+          const u = JSON.parse(storedUser);
+          const updated = { ...u, coinsBalance: data.coinsBalance };
+          localStorage.setItem('decarb_user', JSON.stringify(updated));
+          setUser(updated);
+        }
+        window.dispatchEvent(new Event('auth-change'));
+      }
+    } catch (e) {
+      console.error('Error awarding coins:', e);
+    }
   };
 
   const handleLogout = () => {
@@ -382,6 +538,65 @@ export default function GlassNavbar() {
         alignItems: 'center',
         gap: '12px'
       }}>
+        {/* Premium Upgrade Button (Crown/Gold Logo) */}
+        {user && user.role === 'customer' && (
+          <button
+            onClick={handlePremiumClick}
+            style={{
+              background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
+              border: isPremium ? '2.5px solid #fbbf24' : '1px solid rgba(251, 191, 36, 0.4)',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#000',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.35)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              padding: 0,
+              outline: 'none',
+            }}
+            className="hover-lift"
+            title={isPremium ? "Premium Active - Click to view plans" : "Unlock Premium Subscription"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={isPremium ? "#000000" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={isPremium ? "animate-pulse" : ""}>
+              <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" />
+              <path d="M3 20h18" />
+            </svg>
+          </button>
+        )}
+
+        {/* Ads Play Button (Vibrant Logo) */}
+        {user && user.role === 'customer' && (
+          <button
+            onClick={handleAdsClick}
+            style={{
+              background: 'linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(236, 72, 153, 0.45)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              padding: 0,
+              outline: 'none',
+            }}
+            className="hover-lift"
+            title="Watch Ads & Earn Free Coins"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+        )}
+
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
@@ -425,8 +640,20 @@ export default function GlassNavbar() {
         {user ? (
           <>
             {user.role === 'customer' ? (
-              <button
-                onClick={openCustomerModal}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button onClick={handleScannerClick} style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  fontSize: '0.85rem', background: 'rgba(16, 185, 129, 0.15)', color: '#059669',
+                  padding: '6px 12px', borderRadius: '20px', fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.05em',
+                  border: '1px solid rgba(16, 185, 129, 0.3)', cursor: 'pointer',
+                  transition: 'var(--transition-smooth)'
+                }} className="hover-lift">
+                  <img src="/ai-scanner-logo.png" alt="AI Scanner" style={{ width: '16px', height: '16px', filter: theme === 'dark' ? 'brightness(1.2)' : 'none' }} />
+                  AI Scanner
+                </button>
+                <button
+                  onClick={openCustomerModal}
                 style={{
                   fontSize: '0.85rem',
                   background: 'var(--accent)',
@@ -445,6 +672,7 @@ export default function GlassNavbar() {
               >
                 {user.role}
               </button>
+              </div>
             ) : (
               <span style={{
                 fontSize: '0.85rem',
@@ -762,7 +990,406 @@ export default function GlassNavbar() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
 
+      {/* ── Ads System Modal Overlay ── */}
+      {showAdsModal && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
+          <div
+            className="modal-card animate-fade-in"
+            style={{
+              maxWidth: '520px',
+              width: '95%',
+              padding: '24px',
+              borderRadius: '24px',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-hover)'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary)', fontFamily: "'Outfit', sans-serif", display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ec4899' }}>
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  LastBite Ad Revenue
+                </h2>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Watch ad campaigns to earn free GreenCoins!</p>
+              </div>
+              {/* Only show Close button if not started or finished! Cannot close while watching! */}
+              {(adStatus === 'not_started' || adStatus === 'completed') && (
+                <button
+                  onClick={() => setShowAdsModal(false)}
+                  style={{ background: 'none', border: 'none', fontSize: '1.6rem', cursor: 'pointer', color: 'var(--text-secondary)', lineHeight: 1 }}
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+
+            {/* Modal Body */}
+            {adLoading ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading Ad Campaign...</div>
+            ) : currentAd ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                {/* Ad Details Banner */}
+                <div style={{ background: 'var(--surface-alt)', borderRadius: '16px', padding: '14px', border: '1px solid var(--border)', textAlign: 'left' }}>
+                  <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899', padding: '2px 8px', borderRadius: '4px', letterSpacing: '0.04em' }}>
+                    SPONSORED CAMPAIGN
+                  </span>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '6px', marginBottom: '2px' }}>
+                    {currentAd.title}
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    by {currentAd.company} • Earn {adCoinsValue} Coins
+                  </p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '8px', lineHeight: '1.4' }}>
+                    {currentAd.description}
+                  </p>
+                </div>
+
+                {/* Ad Player Segment */}
+                <div style={{
+                  width: '100%',
+                  aspectRatio: '16/9',
+                  background: '#000',
+                  borderRadius: '18px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  border: '1px solid var(--border)'
+                }}>
+                  {adStatus === 'not_started' && (
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(0,0,0,0.65)',
+                      backdropFilter: 'blur(3px)',
+                      zIndex: 10,
+                      gap: '12px',
+                      padding: '20px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 0 20px rgba(236,72,153,0.4)',
+                        cursor: 'pointer'
+                      }} onClick={startWatchingAd}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" strokeWidth="2">
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                      </div>
+                      <p style={{ color: '#ffffff', fontSize: '0.85rem', fontWeight: 700 }}>
+                        Click to watch ad and earn {adCoinsValue} coins
+                      </p>
+                      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.68rem' }}>
+                        Ad duration: {currentAd.duration} seconds • No skip option
+                      </p>
+                    </div>
+                  )}
+
+                  {adStatus === 'watching' && (
+                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                      <video
+                        src={currentAd.videoUrl}
+                        autoPlay
+                        muted
+                        playsInline
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      
+                      {/* Timer Overlay */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        backgroundColor: 'rgba(0,0,0,0.85)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                        padding: '6px 12px',
+                        fontSize: '0.75rem',
+                        color: '#ffffff',
+                        fontWeight: '700',
+                        fontFamily: 'monospace',
+                        zIndex: 20
+                      }}>
+                        Reward in: {countdown}s
+                      </div>
+
+                      {/* Progress Line Bar */}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        zIndex: 20
+                      }}>
+                        <div style={{
+                          height: '100%',
+                          backgroundColor: '#ec4899',
+                          width: `${((currentAd.duration - countdown) / currentAd.duration) * 100}%`,
+                          transition: 'width 1s linear'
+                        }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {adStatus === 'completed' && (
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(16, 185, 129, 0.95)',
+                      zIndex: 10,
+                      gap: '8px',
+                      padding: '20px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        background: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 0 20px rgba(255,255,255,0.4)'
+                      }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <h3 style={{ color: '#ffffff', fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>
+                        Success! Reward Claimed
+                      </h3>
+                      <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.85rem', fontWeight: 700, margin: 0 }}>
+                        🪙 +{adCoinsValue} GreenCoins credited successfully!
+                      </p>
+                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.68rem', marginTop: '6px', margin: 0 }}>
+                        Your coins are updated and ready for checkout discounts.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action CTA Button */}
+                {adStatus === 'completed' && (
+                  <button
+                    onClick={() => setShowAdsModal(false)}
+                    className="btn btn-primary"
+                    style={{ background: '#ec4899', borderColor: '#db2777', color: '#ffffff', width: '100%', py: '12px', borderRadius: '14px', fontSize: '0.85rem', fontWeight: '800' }}
+                  >
+                    Done • Back to Dashboard
+                  </button>
+                )}
+
+              </div>
+            ) : (
+              <div style={{ padding: '30px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>No active ad campaigns at the moment.</div>
+            )}
+
+          </div>
+        </div>
+      )}
+      {/* ── Simulated Razorpay Sandbox Modal Overlay ── */}
+      {showRazorpayMock && (
+        <div className="modal-overlay" style={{ zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="modal-card animate-fade-in" style={{
+            maxWidth: '440px',
+            width: '92%',
+            padding: '24px',
+            borderRadius: '24px',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-hover)'
+          }}>
+            {/* Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #10b981, #047857)',
+              color: '#ffffff',
+              padding: '16px 20px',
+              borderRadius: '16px 16px 0 0',
+              margin: '-24px -24px 20px -24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', background: 'rgba(255,255,255,0.2)', padding: '2px 6px', borderRadius: '4px' }}>
+                  RAZORPAY TEST API SANDBOX
+                </span>
+                <h4 style={{ fontSize: '0.98rem', fontWeight: 800, marginTop: '4px', color: '#ffffff' }}>Last Bite Payment Gateway</h4>
+              </div>
+              <button
+                onClick={handleMockTopupDismiss}
+                style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '1.4rem', cursor: 'pointer' }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Amount details */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Amount to Charge</span>
+              <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+                ₹{mockAmount.toFixed(2)}
+              </h2>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                Order ID: {mockOrderId}
+              </span>
+            </div>
+
+            {/* Selector Tabs */}
+            <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-alt)', padding: '4px', borderRadius: '10px', marginBottom: '16px' }}>
+              {['card', 'upi', 'netbanking'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setMockTab(tab)}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    background: mockTab === tab ? 'var(--primary)' : 'transparent',
+                    color: mockTab === tab ? '#ffffff' : 'var(--text-secondary)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            <div style={{ minHeight: '130px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
+              {mockTab === 'card' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
+                  <div>
+                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Card Number</label>
+                    <input type="text" placeholder="4111 1111 1111 1111" className="form-input" style={{ height: '36px', fontSize: '0.82rem', marginTop: '3px' }} disabled />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Expiry</label>
+                      <input type="text" placeholder="12/29" className="form-input" style={{ height: '36px', fontSize: '0.82rem', marginTop: '3px' }} disabled />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>CVV</label>
+                      <input type="password" placeholder="***" className="form-input" style={{ height: '36px', fontSize: '0.82rem', marginTop: '3px' }} disabled />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {mockTab === 'upi' && (
+                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 8px' }}>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <rect x="7" y="7" width="3" height="3" />
+                    <rect x="14" y="7" width="3" height="3" />
+                    <rect x="7" y="14" width="3" height="3" />
+                    <rect x="14" y="14" width="3" height="3" />
+                  </svg>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>Scan simulated dynamic QR Code</p>
+                  <p style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Use any sandbox UPI app to trigger response.</p>
+                </div>
+              )}
+
+              {mockTab === 'netbanking' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Select Test Bank</label>
+                  <select className="form-input" style={{ height: '38px', fontSize: '0.82rem', padding: '0 10px', marginTop: '3px' }} disabled>
+                    <option>State Bank of India (SBI)</option>
+                    <option>HDFC Bank Sandbox</option>
+                    <option>ICICI Bank Sandbox</option>
+                    <option>Axis Bank Sandbox</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={handleMockTopupSuccess}
+                disabled={mockLoading}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  textTransform: 'uppercase',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: mockLoading ? 'default' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+                  opacity: mockLoading ? 0.7 : 1
+                }}
+              >
+                {mockLoading ? (
+                  <>
+                    <RefreshCw size={14} className="ra2-spinner" style={{ animation: 'spin 1s linear infinite' }} />
+                    Verifying Sandbox...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={15} /> Simulate Payment Success
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleMockTopupDismiss}
+                disabled={mockLoading}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  cursor: mockLoading ? 'default' : 'pointer'
+                }}
+              >
+                Cancel Sandbox Payment
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginTop: '14px', color: 'var(--text-secondary)', fontSize: '0.62rem', fontWeight: 600 }}>
+              <Shield size={12} style={{ color: '#10b981' }} /> Secure Sandbox Protected by Razorpay simulator
+            </div>
           </div>
         </div>
       )}

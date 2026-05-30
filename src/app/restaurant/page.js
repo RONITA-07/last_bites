@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/utils/api';
 
 /* ──────────────────────────────────────────────
    BOTTOM NAV
@@ -247,7 +248,8 @@ export default function RestaurantPage() {
     if(!user) return;
     setLoading(true);
     try{
-      const r = await fetch(`http://localhost:5000/api/food/listings?restaurant_id=${user.id}`);
+      const restaurantId = user.id || user._id;
+      const r = await fetch(`${API_BASE_URL}/api/food/listings?restaurant_id=${restaurantId}`);
       if(r.ok) setListings(await r.json());
     }finally{ setLoading(false); }
   };
@@ -274,15 +276,16 @@ export default function RestaurantPage() {
     }
 
     try{
+      const restaurantId = user.id || user._id;
       const url = editingId 
-        ? `http://localhost:5000/api/food/listings/${editingId}`
-        : 'http://localhost:5000/api/food/upload';
+        ? `${API_BASE_URL}/api/food/listings/${editingId}`
+        : `${API_BASE_URL}/api/food/upload`;
       const method = editingId ? 'PUT' : 'POST';
 
       const res = await fetch(url,{
         method, headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          title, description:desc, restaurant_id:user.id,
+          title, description:desc, restaurant_id: restaurantId,
           price:Number(price)||0, original_price:Number(orig)||0,
           quantity:Number(qty)||1, category:cat,
           pickup_time: calculatedPickup,
