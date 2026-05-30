@@ -24,7 +24,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // preflight for all routes
+app.options('(.*)', cors(corsOptions)); // preflight for all routes — Node 24 compatible
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
